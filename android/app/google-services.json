@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "338197364045",
+    "project_id": "bionexus-7dda4",
+    "storage_bucket": "bionexus-7dda4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338197364045:android:d89473de54d7e6dce90b04",
+        "android_client_info": {
+          "package_name": "com.example.bionexus_admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcX0DV3mPMbwa8Z9cJX5bZRjPOmDXKjHM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
