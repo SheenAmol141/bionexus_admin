@@ -73,12 +73,26 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-class MainContent extends StatelessWidget {
+class MainContent extends StatefulWidget {
   const MainContent({super.key});
 
   @override
+  State<MainContent> createState() => _MainContentState();
+}
+
+class _MainContentState extends State<MainContent> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  String currentPage = "";
+  @override
   Widget build(BuildContext context) {
     TextStyle _text = TextStyle(color: Colors.white);
+    TextStyle _listText = TextStyle(color: PRUSSIAN_BLUE);
+
     // VARIABLES ---------------------
 
     return Scaffold(
@@ -107,11 +121,90 @@ class MainContent extends StatelessWidget {
                 '${FirebaseAuth.instance.currentUser!.email}',
                 style: _text,
               ),
-            )
+            ),
+            ListTile(
+              tileColor:  currentPage.isEmpty ? Colors.grey.withOpacity(0.2) : currentPage == "Licenses" ? Colors.grey.withOpacity(0.2) : null,
+              trailing: Icon(Icons.badge),
+              // iconColor: AERO,
+              title: Text(
+                "Licenses",
+                style: _listText,
+              ),
+              onTap: (() {
+                setState(() {
+                  currentPage = "Licenses";
+                });
+                print(currentPage);
+                Navigator.pop(context);
+              }),
+            ),
+            ListTile(
+              tileColor: currentPage == "Sales" ? Colors.grey.withOpacity(0.2) : null,
+              trailing: Icon(Icons.bar_chart_rounded),
+              // iconColor: AERO,
+              title: Text(
+                "Sales",
+                style: _listText,
+              ),
+              onTap: (() {
+                setState(() {
+                  currentPage = "Sales";
+                });
+                print(currentPage);
+                Navigator.pop(context);
+              }),
+            ),
+            Divider(),
+            ListTile(
+              tileColor: currentPage == "Settings" ? Colors.grey.withOpacity(0.2) : null,
+              trailing: Icon(Icons.settings),
+              // iconColor: AERO,
+              title: Text(
+                "Settings",
+                style: _listText,
+              ),
+              onTap: (() {
+                setState(() {
+                  currentPage = "Settings";
+                });
+                print(currentPage);
+                Navigator.pop(context);
+              }),
+            ),
+            ListTile(
+              trailing: Icon(Icons.exit_to_app),
+              // iconColor: AERO,
+              title: Text(
+                "Log Out",
+                style: _listText,
+              ),
+
+              onTap: () {
+                FirebaseAuth.instance.signOut();
+                Future.delayed(Duration(milliseconds: 300), () {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => MainScreen()));
+                });
+              },
+            ),
           ],
         ),
       ),
-      body: Container(),
+      body: currentPage.isEmpty
+          ? Center(
+              child: Text("Licenses"),
+            )
+          : currentPage == "Licenses"
+              ? Center(
+                  child: Text("Licenses"),
+                )
+              : currentPage == "Sales"
+                  ? Center(
+                      child: Text("Sales"),
+                    )
+                  : currentPage == "Settings" ? Center(
+                      child: Text("Settings"),
+                    ) : null
     );
   }
 }
