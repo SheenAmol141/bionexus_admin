@@ -1,10 +1,10 @@
-import 'package:bionexus_admin/subpages/fittedVideo.dart';
-import 'package:bionexus_admin/subpages/splash.dart';
+// ignore_for_file: prefer_const_constructors
+
+import 'package:bionexus_admin/subpages/fitted_video.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:bionexus_admin/hex_color.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -17,8 +17,10 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return FirebaseAuth.instance.currentUser != null
-        ? HomeScreen()
-        : Stack( // --------------------------------------------------------------------------------------------------- loginScreen
+        ? MainContent()
+        : Stack(
+            // --------------------------------------------------------------------------------------------------- loginScreen
+
             children: [
               FittedVideo(),
               Opacity(
@@ -49,19 +51,16 @@ class _MainScreenState extends State<MainScreen> {
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(30),
                             topRight: Radius.circular(30))),
-                    height: 400,
+                    height: 500,
                     width: MediaQuery.of(context).size.width,
                     child: Container(
                       child: SignInScreen(providers: [
                         EmailAuthProvider(),
                       ], actions: [
                         AuthStateChangeAction<UserCreated>((context, state) {
-                          print("Account created");
-                          print(FirebaseAuth.instance.currentUser);
                           setState(() {});
                         }),
                         AuthStateChangeAction<SignedIn>((context, state) {
-                          print(FirebaseAuth.instance.currentUser);
                           setState(() {});
                         })
                       ]),
@@ -74,17 +73,45 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
+class MainContent extends StatelessWidget {
+  const MainContent({super.key});
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    TextStyle _text = TextStyle(color: Colors.white);
+    // VARIABLES ---------------------
+
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          "BIONEXUS",
+          style: TextStyle(
+              color: Colors.white,
+              fontFamily: "montserrat",
+              fontWeight: FontWeight.bold),
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: EMERALD,
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: EMERALD),
+              accountName: Text(
+                'Hello ${FirebaseAuth.instance.currentUser!.displayName ?? "unnamed"}!',
+                style: _text,
+              ),
+              accountEmail: Text(
+                '${FirebaseAuth.instance.currentUser!.email}',
+                style: _text,
+              ),
+            )
+          ],
+        ),
+      ),
+      body: Container(),
+    );
   }
 }

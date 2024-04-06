@@ -1,29 +1,8 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import '../main.dart';
+import 'package:bionexus_admin/hex_color.dart';
 
-extension HexColor on Color {
-  /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
-  static Color fromHex(String hexString) {
-    final buffer = StringBuffer();
-    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-    buffer.write(hexString.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
-  }
-
-  /// Prefixes a hash sign if [leadingHashSign] is set to `true` (default is `true`).
-  String toHex({bool leadingHashSign = true}) => '${leadingHashSign ? '#' : ''}'
-      '${alpha.toRadixString(16).padLeft(2, '0')}'
-      '${red.toRadixString(16).padLeft(2, '0')}'
-      '${green.toRadixString(16).padLeft(2, '0')}'
-      '${blue.toRadixString(16).padLeft(2, '0')}';
-}
-
-//COLORS
-final Color SPACE_CADET = HexColor.fromHex("21295C");
-final Color PROCESS_CYAN = HexColor.fromHex("08ADDB");
-final Color DARK_GREEN = HexColor.fromHex("00322F");
 
 
 
@@ -41,8 +20,7 @@ class _SplashState extends State<Splash> {
   void initState() {
     super.initState();
 
-    Future.delayed(Duration(seconds: 1), () {
-      print(widget.showOnboard);
+    Future.delayed(const Duration(seconds: 1), () {
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (context) => MyApp(showOnboard: widget.showOnboard)));
     });
@@ -60,8 +38,8 @@ class _SplashState extends State<Splash> {
               child: Column(
                 children: [
                   SizedBox(width: MediaQuery.of(context).size.width * .08, child: Image.asset("assets/datagoralogo.png"),),
-                Text("datagora", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                SizedBox(height: 100,)
+                const Text("datagora", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                const SizedBox(height: 100,)
                 ],
               ),
             ),
@@ -75,8 +53,8 @@ class _SplashState extends State<Splash> {
               child: Column(
                 children: [
                   SizedBox(width: 40, child: Image.asset("assets/datagoralogo.png"),),
-                Text("datagora", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                SizedBox(height: 100,)
+                const Text("datagora", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                const SizedBox(height: 100,)
                 ],
               ),
             ),

@@ -1,10 +1,10 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:bionexus_admin/subpages/fittedVideo.dart';
-import 'package:bionexus_admin/subpages/mainScreen.dart';
-import 'package:bionexus_admin/subpages/splash.dart';
+import 'package:bionexus_admin/subpages/fitted_video.dart';
+import 'package:bionexus_admin/subpages/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bionexus_admin/hex_color.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({
@@ -53,7 +53,7 @@ class OnboardingScreen extends StatelessWidget {
                 OutlinedButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStatePropertyAll(
-                          PROCESS_CYAN.withOpacity(0.2)),
+                          AERO.withOpacity(0.3)),
                       shape: MaterialStatePropertyAll(RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4))),
                       side: MaterialStateProperty.all(BorderSide(
@@ -63,13 +63,12 @@ class OnboardingScreen extends StatelessWidget {
                       padding: MaterialStatePropertyAll(EdgeInsets.symmetric(
                           horizontal:
                               (MediaQuery.of(context).size.width * .5) - 115,
-                          vertical: 15)),
+                          vertical: 20)),
                     ),
                     onPressed: () async {
                       final SharedPreferences prefs =
                           await SharedPreferences.getInstance();
                       await prefs.setBool("opened", true);
-                      print(await prefs.getBool("opened"));
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => MainScreen()));
                     },
