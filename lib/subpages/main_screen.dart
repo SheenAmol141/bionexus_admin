@@ -123,7 +123,7 @@ class _MainContentState extends State<MainContent> {
               ),
             ),
             ListTile(
-              tileColor:  currentPage.isEmpty ? Colors.grey.withOpacity(0.2) : currentPage == "Licenses" ? Colors.grey.withOpacity(0.2) : null,
+              tileColor:  currentPage.isEmpty ? Colors.grey.withOpacity(0.3) : currentPage == "Licenses" ? Colors.grey.withOpacity(0.2) : null,
               trailing: Icon(Icons.badge),
               // iconColor: AERO,
               title: Text(
@@ -139,7 +139,7 @@ class _MainContentState extends State<MainContent> {
               }),
             ),
             ListTile(
-              tileColor: currentPage == "Sales" ? Colors.grey.withOpacity(0.2) : null,
+              tileColor: currentPage == "Sales" ? Colors.grey.withOpacity(0.3) : null,
               trailing: Icon(Icons.bar_chart_rounded),
               // iconColor: AERO,
               title: Text(
@@ -156,7 +156,7 @@ class _MainContentState extends State<MainContent> {
             ),
             Divider(),
             ListTile(
-              tileColor: currentPage == "Settings" ? Colors.grey.withOpacity(0.2) : null,
+              tileColor: currentPage == "Settings" ? Colors.grey.withOpacity(0.3) : null,
               trailing: Icon(Icons.settings),
               // iconColor: AERO,
               title: Text(

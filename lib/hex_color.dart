@@ -26,3 +26,4 @@ final Color DARK_GREEN = HexColor.fromHex("00322F");
 final Color EMERALD = HexColor.fromHex("#00BF63");
 final Color AERO = HexColor.fromHex("#0CC0DF");
 final Color PRUSSIAN_BLUE = HexColor.fromHex("#13293D");
+
