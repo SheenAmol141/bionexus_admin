@@ -35,10 +35,9 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         loaded = true;
       });
-      Future.delayed(Duration(seconds: 1),
-      (){
-        ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Signed in")));
+      Future.delayed(Duration(seconds: 1), () {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Signed in")));
       });
     });
   }
@@ -103,9 +102,8 @@ class _MainScreenState extends State<MainScreen> {
                       ], actions: [
                         AuthStateChangeAction<UserCreated>((context, state) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                  "Account created successfully")));
-                                  isitAdmin();
+                              content: Text("Account created successfully")));
+                          isitAdmin();
                         }),
                         AuthStateChangeAction<SignedIn>((context, state) {
                           isitAdmin();
