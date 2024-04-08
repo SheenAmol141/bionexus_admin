@@ -1,6 +1,43 @@
-// ignore_for_file: prefer_const_constructors
+// import 'package:flutter/material.dart';
 
-import 'dart:html';
+// class LicensesPage extends StatefulWidget {
+//   const LicensesPage({super.key});
+
+//   @override
+//   State<LicensesPage> createState() => _LicensesPageState();
+// }
+
+// class _LicensesPageState extends State<LicensesPage> {
+//   @override
+//   Widget build(BuildContext context) {
+
+    
+
+//     final myInt = Future.de
+
+
+//     return Container(child: StreamBuilder(stream: , builder: builder),);
+
+
+
+    
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ignore_for_file: prefer_const_constructors
 
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/fitted_video.dart';
@@ -19,49 +56,11 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  bool isAdmin = false;
-  bool loaded = false;
-
-  void isitAdmin() {
-    String email = FirebaseAuth.instance.currentUser!.email!;
-    late FirebaseFirestore db = FirebaseFirestore.instance;
-
-    db.collection("Admins").doc(email).get().then((snapshot) {
-      if (snapshot.exists) {
-        setState(() {
-          isAdmin = true;
-        });
-      }
-      setState(() {
-        loaded = true;
-      });
-      Future.delayed(Duration(seconds: 1),
-      (){
-        ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Signed in")));
-      });
-    });
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    if (FirebaseAuth.instance.currentUser != null) {
-      isitAdmin();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return FirebaseAuth.instance.currentUser != null
-        ? loaded
-            ? isAdmin
-                ? AdminContent()
-                : ClientContent()
-            : Center(
-                child: CircularProgressIndicator(),
-              )
+        ? AdminContent()
         : Stack(
             // --------------------------------------------------------------------------------------------------- loginScreen
 
@@ -104,11 +103,15 @@ class _MainScreenState extends State<MainScreen> {
                         AuthStateChangeAction<UserCreated>((context, state) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(
-                                  "Account created successfully")));
-                                  isitAdmin();
+                                  "Account created successfully, signed in")));
+                                  setState(() {});
+                          
                         }),
                         AuthStateChangeAction<SignedIn>((context, state) {
-                          isitAdmin();
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                  "Signed in")));
+                          setState(() {});
                         })
                       ]),
                     ),
@@ -120,6 +123,17 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
+
+
+
+
+
+
+
+
+
+
+
 class AdminContent extends StatefulWidget {
   const AdminContent({super.key});
 
@@ -128,6 +142,7 @@ class AdminContent extends StatefulWidget {
 }
 
 class _AdminContentState extends State<AdminContent> {
+
   String currentPage = "";
   @override
   Widget build(BuildContext context) {
@@ -140,7 +155,7 @@ class _AdminContentState extends State<AdminContent> {
         appBar: AppBar(
           centerTitle: true,
           title: Text(
-            "BIONEXUS - ADMIN",
+            "BIONEXUS",
             style: TextStyle(
                 color: Colors.white,
                 fontFamily: "montserrat",
@@ -259,141 +274,3 @@ class _AdminContentState extends State<AdminContent> {
   }
 }
 
-class ClientContent extends StatefulWidget {
-  const ClientContent({super.key});
-
-  @override
-  State<ClientContent> createState() => _ClientContentState();
-}
-
-class _ClientContentState extends State<ClientContent> {
-  String currentPage = "";
-  @override
-  Widget build(BuildContext context) {
-    TextStyle _text = TextStyle(color: Colors.white);
-    TextStyle _listText = TextStyle(color: PRUSSIAN_BLUE);
-
-    // VARIABLES ---------------------
-
-    return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(
-            "BIONEXUS",
-            style: TextStyle(
-                color: Colors.white,
-                fontFamily: "montserrat",
-                fontWeight: FontWeight.bold),
-          ),
-          iconTheme: IconThemeData(color: Colors.white),
-          backgroundColor: EMERALD,
-        ),
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              UserAccountsDrawerHeader(
-                decoration: BoxDecoration(color: EMERALD),
-                accountName: Text(
-                  'Hello ${FirebaseAuth.instance.currentUser!.displayName ?? "unnamed"}!',
-                  style: _text,
-                ),
-                accountEmail: Text(
-                  '${FirebaseAuth.instance.currentUser!.email}',
-                  style: _text,
-                ),
-              ),
-              ListTile(
-                tileColor: currentPage.isEmpty
-                    ? Colors.grey.withOpacity(0.3)
-                    : currentPage == "Patient Queue"
-                        ? Colors.grey.withOpacity(0.2)
-                        : null,
-                trailing: Icon(Icons.badge),
-                // iconColor: AERO,
-                title: Text(
-                  "Patient Queue",
-                  style: _listText,
-                ),
-                onTap: (() {
-                  setState(() {
-                    currentPage = "Patient Queue";
-                  });
-                  print(currentPage);
-                  Navigator.pop(context);
-                }),
-              ),
-              ListTile(
-                tileColor: currentPage == "Sales"
-                    ? Colors.grey.withOpacity(0.3)
-                    : null,
-                trailing: Icon(Icons.queue_rounded),
-                // iconColor: AERO,
-                title: Text(
-                  "Sales",
-                  style: _listText,
-                ),
-                onTap: (() {
-                  setState(() {
-                    currentPage = "Sales";
-                  });
-                  print(currentPage);
-                  Navigator.pop(context);
-                }),
-              ),
-              Divider(),
-              ListTile(
-                tileColor: currentPage == "Settings"
-                    ? Colors.grey.withOpacity(0.3)
-                    : null,
-                trailing: Icon(Icons.settings),
-                // iconColor: AERO,
-                title: Text(
-                  "Settings",
-                  style: _listText,
-                ),
-                onTap: (() {
-                  setState(() {
-                    currentPage = "Settings";
-                  });
-                  print(currentPage);
-                  Navigator.pop(context);
-                }),
-              ),
-              ListTile(
-                trailing: Icon(Icons.exit_to_app),
-                // iconColor: AERO,
-                title: Text(
-                  "Log Out",
-                  style: _listText,
-                ),
-
-                onTap: () {
-                  FirebaseAuth.instance.signOut();
-                  Future.delayed(Duration(milliseconds: 300), () {
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => MainScreen()));
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-        body: currentPage.isEmpty
-            ? Center(
-                child: Text("Licenses"),
-              )
-            : currentPage == "Licenses"
-                ? Center(
-                    child: Text("Licenses"),
-                  )
-                : currentPage == "Sales"
-                    ? Center(
-                        child: Text("Sales"),
-                      )
-                    : currentPage == "Settings"
-                        ? Center(
-                            child: Text("Settings"),
-                          )
-                        : null);
-  }
-}

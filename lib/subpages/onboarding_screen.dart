@@ -2,6 +2,7 @@
 
 import 'package:bionexus_admin/subpages/fitted_video.dart';
 import 'package:bionexus_admin/subpages/main_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bionexus_admin/hex_color.dart';
@@ -66,6 +67,12 @@ class OnboardingScreen extends StatelessWidget {
                           vertical: 20)),
                     ),
                     onPressed: () async {
+
+                      FirebaseFirestore.instance.collection("Admins").add({"admin": true});
+
+
+
+
                       final SharedPreferences prefs =
                           await SharedPreferences.getInstance();
                       await prefs.setBool("opened", true);
