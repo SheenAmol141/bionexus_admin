@@ -9,20 +9,20 @@ class AddTeam extends StatefulWidget {
   State<AddTeam> createState() => _AddTeamState();
 }
 
-
-
-
 void createTeam() {
   String uid = FirebaseAuth.instance.currentUser!.uid;
   String email = FirebaseAuth.instance.currentUser!.email!;
-  FirebaseFirestore.instance.collection("Teams").doc(uid).set({"root-user": email});
-  FirebaseFirestore.instance.collection("Users").doc(email).update({"team-license": uid});
-  
+  FirebaseFirestore.instance
+      .collection("Teams")
+      .doc(uid)
+      .set({"root-user": email});
+  FirebaseFirestore.instance
+      .collection("Users")
+      .doc(email)
+      .update({"team-license": uid});
 }
 
-
 class _AddTeamState extends State<AddTeam> {
-  
   TextEditingController _teamIdController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -47,12 +47,10 @@ class _AddTeamState extends State<AddTeam> {
                 OutlinedButton(
                   onPressed: () {
                     // Handle "Create a new team" button press
-            createTeam();
-
+                    createTeam();
                   },
                   child: Text('Create a new team'),
                 ),
-                
               ],
             ),
             SizedBox(height: 40.0),
@@ -76,4 +74,4 @@ class _AddTeamState extends State<AddTeam> {
       ),
     );
   }
-  }
+}

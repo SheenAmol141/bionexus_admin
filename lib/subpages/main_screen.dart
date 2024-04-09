@@ -17,7 +17,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   bool isAdmin = false;
   bool loaded = false;
-    bool noTeam = false;
+  bool noTeam = false;
 
   void isitAdmin() {
     String email = FirebaseAuth.instance.currentUser!.email!;
@@ -36,7 +36,7 @@ class _MainScreenState extends State<MainScreen> {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text("Signed in")));
       });
-    }); 
+    });
   }
 
   void isitinTeam() {
@@ -107,7 +107,8 @@ class _MainScreenState extends State<MainScreen> {
                             topRight: Radius.circular(30))),
                     height: 500,
                     width: MediaQuery.of(context).size.width,
-                    child: Container( //Login container
+                    child: Container(
+                      //Login container
                       child: SignInScreen(providers: [
                         EmailAuthProvider(),
                       ], actions: [
@@ -116,7 +117,13 @@ class _MainScreenState extends State<MainScreen> {
                               content: Text("Account created successfully")));
                           isitAdmin();
                           isitinTeam();
-                          FirebaseFirestore.instance.collection("Users").doc(FirebaseAuth.instance.currentUser!.email).set({"uid": FirebaseAuth.instance.currentUser!.uid, "team-license": null});
+                          FirebaseFirestore.instance
+                              .collection("Users")
+                              .doc(FirebaseAuth.instance.currentUser!.email)
+                              .set({
+                            "uid": FirebaseAuth.instance.currentUser!.uid,
+                            "team-license": null
+                          });
                         }),
                         AuthStateChangeAction<SignedIn>((context, state) {
                           isitAdmin();
@@ -271,10 +278,9 @@ class _AdminContentState extends State<AdminContent> {
   }
 }
 
-
 class ClientContent extends StatefulWidget {
   bool team;
-   ClientContent({super.key, required this.team});
+  ClientContent({super.key, required this.team});
 
   @override
   State<ClientContent> createState() => _ClientContentState();
@@ -289,126 +295,127 @@ class _ClientContentState extends State<ClientContent> {
 
     // VARIABLES ---------------------
 
-    return  widget.team ? AddTeam() : Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(
-            "BIONEXUS",
-            style: TextStyle(
-                color: Colors.white,
-                fontFamily: "montserrat",
-                fontWeight: FontWeight.bold),
-          ),
-          iconTheme: IconThemeData(color: Colors.white),
-          backgroundColor: EMERALD,
-        ),
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              UserAccountsDrawerHeader(
-                decoration: BoxDecoration(color: EMERALD),
-                accountName: Text(
-                  'Hello ${FirebaseAuth.instance.currentUser!.displayName ?? "unnamed"}!',
-                  style: _text,
-                ),
-                accountEmail: Text(
-                  '${FirebaseAuth.instance.currentUser!.email}',
-                  style: _text,
-                ),
+    return widget.team
+        ? AddTeam()
+        : Scaffold(
+            appBar: AppBar(
+              centerTitle: true,
+              title: Text(
+                "BIONEXUS",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: "montserrat",
+                    fontWeight: FontWeight.bold),
               ),
-              ListTile(
-                tileColor: currentPage.isEmpty
-                    ? Colors.grey.withOpacity(0.3)
-                    : currentPage == "Patient Queue"
-                        ? Colors.grey.withOpacity(0.2)
+              iconTheme: IconThemeData(color: Colors.white),
+              backgroundColor: EMERALD,
+            ),
+            drawer: Drawer(
+              child: ListView(
+                children: [
+                  UserAccountsDrawerHeader(
+                    decoration: BoxDecoration(color: EMERALD),
+                    accountName: Text(
+                      'Hello ${FirebaseAuth.instance.currentUser!.displayName ?? "unnamed"}!',
+                      style: _text,
+                    ),
+                    accountEmail: Text(
+                      '${FirebaseAuth.instance.currentUser!.email}',
+                      style: _text,
+                    ),
+                  ),
+                  ListTile(
+                    tileColor: currentPage.isEmpty
+                        ? Colors.grey.withOpacity(0.3)
+                        : currentPage == "Patient Queue"
+                            ? Colors.grey.withOpacity(0.2)
+                            : null,
+                    trailing: Icon(Icons.badge),
+                    // iconColor: AERO,
+                    title: Text(
+                      "Patient Queue",
+                      style: _listText,
+                    ),
+                    onTap: (() {
+                      setState(() {
+                        currentPage = "Patient Queue";
+                      });
+                      print(currentPage);
+                      Navigator.pop(context);
+                    }),
+                  ),
+                  ListTile(
+                    tileColor: currentPage == "Sales"
+                        ? Colors.grey.withOpacity(0.3)
                         : null,
-                trailing: Icon(Icons.badge),
-                // iconColor: AERO,
-                title: Text(
-                  "Patient Queue",
-                  style: _listText,
-                ),
-                onTap: (() {
-                  setState(() {
-                    currentPage = "Patient Queue";
-                  });
-                  print(currentPage);
-                  Navigator.pop(context);
-                }),
-              ),
-              ListTile(
-                tileColor: currentPage == "Sales"
-                    ? Colors.grey.withOpacity(0.3)
-                    : null,
-                trailing: Icon(Icons.queue_rounded),
-                // iconColor: AERO,
-                title: Text(
-                  "Sales",
-                  style: _listText,
-                ),
-                onTap: (() {
-                  setState(() {
-                    currentPage = "Sales";
-                  });
-                  print(currentPage);
-                  Navigator.pop(context);
-                }),
-              ),
-              Divider(),
-              ListTile(
-                tileColor: currentPage == "Settings"
-                    ? Colors.grey.withOpacity(0.3)
-                    : null,
-                trailing: Icon(Icons.settings),
-                // iconColor: AERO,
-                title: Text(
-                  "Settings",
-                  style: _listText,
-                ),
-                onTap: (() {
-                  setState(() {
-                    currentPage = "Settings";
-                  });
-                  print(currentPage);
-                  Navigator.pop(context);
-                }),
-              ),
-              ListTile(
-                trailing: Icon(Icons.exit_to_app),
-                // iconColor: AERO,
-                title: Text(
-                  "Log Out",
-                  style: _listText,
-                ),
+                    trailing: Icon(Icons.queue_rounded),
+                    // iconColor: AERO,
+                    title: Text(
+                      "Sales",
+                      style: _listText,
+                    ),
+                    onTap: (() {
+                      setState(() {
+                        currentPage = "Sales";
+                      });
+                      print(currentPage);
+                      Navigator.pop(context);
+                    }),
+                  ),
+                  Divider(),
+                  ListTile(
+                    tileColor: currentPage == "Settings"
+                        ? Colors.grey.withOpacity(0.3)
+                        : null,
+                    trailing: Icon(Icons.settings),
+                    // iconColor: AERO,
+                    title: Text(
+                      "Settings",
+                      style: _listText,
+                    ),
+                    onTap: (() {
+                      setState(() {
+                        currentPage = "Settings";
+                      });
+                      print(currentPage);
+                      Navigator.pop(context);
+                    }),
+                  ),
+                  ListTile(
+                    trailing: Icon(Icons.exit_to_app),
+                    // iconColor: AERO,
+                    title: Text(
+                      "Log Out",
+                      style: _listText,
+                    ),
 
-                onTap: () {
-                  FirebaseAuth.instance.signOut();
-                  Future.delayed(Duration(milliseconds: 300), () {
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => MainScreen()));
-                  });
-                },
+                    onTap: () {
+                      FirebaseAuth.instance.signOut();
+                      Future.delayed(Duration(milliseconds: 300), () {
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (context) => MainScreen()));
+                      });
+                    },
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        body: currentPage.isEmpty
-            ? Center(
-                child: Text("Licenses"),
-              )
-            : currentPage == "Licenses"
+            ),
+            body: currentPage.isEmpty
                 ? Center(
                     child: Text("Licenses"),
                   )
-                : currentPage == "Sales"
+                : currentPage == "Licenses"
                     ? Center(
-                        child: Text("Sales"),
+                        child: Text("Licenses"),
                       )
-                    : currentPage == "Settings"
+                    : currentPage == "Sales"
                         ? Center(
-                            child: Text("Settings"),
+                            child: Text("Sales"),
                           )
-                        : null);
+                        : currentPage == "Settings"
+                            ? Center(
+                                child: Text("Settings"),
+                              )
+                            : null);
   }
 }
-

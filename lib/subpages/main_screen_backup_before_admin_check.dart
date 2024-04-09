@@ -11,31 +11,12 @@
 //   @override
 //   Widget build(BuildContext context) {
 
-    
-
 //     final myInt = Future.de
-
 
 //     return Container(child: StreamBuilder(stream: , builder: builder),);
 
-
-
-    
 //   }
 // }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ignore_for_file: prefer_const_constructors
 
@@ -56,7 +37,6 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-
   @override
   Widget build(BuildContext context) {
     return FirebaseAuth.instance.currentUser != null
@@ -104,13 +84,11 @@ class _MainScreenState extends State<MainScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text(
                                   "Account created successfully, signed in")));
-                                  setState(() {});
-                          
+                          setState(() {});
                         }),
                         AuthStateChangeAction<SignedIn>((context, state) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                  "Signed in")));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Signed in")));
                           setState(() {});
                         })
                       ]),
@@ -123,17 +101,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
 class AdminContent extends StatefulWidget {
   const AdminContent({super.key});
 
@@ -142,7 +109,6 @@ class AdminContent extends StatefulWidget {
 }
 
 class _AdminContentState extends State<AdminContent> {
-
   String currentPage = "";
   @override
   Widget build(BuildContext context) {
@@ -273,4 +239,3 @@ class _AdminContentState extends State<AdminContent> {
                         : null);
   }
 }
-

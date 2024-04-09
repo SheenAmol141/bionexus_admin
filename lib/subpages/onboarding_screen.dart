@@ -16,7 +16,6 @@ class OnboardingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        
         Opacity(
           opacity: .7,
           child: Container(
@@ -53,8 +52,8 @@ class OnboardingScreen extends StatelessWidget {
               children: [
                 OutlinedButton(
                     style: ButtonStyle(
-                      backgroundColor: MaterialStatePropertyAll(
-                          AERO.withOpacity(0.3)),
+                      backgroundColor:
+                          MaterialStatePropertyAll(AERO.withOpacity(0.3)),
                       shape: MaterialStatePropertyAll(RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4))),
                       side: MaterialStateProperty.all(BorderSide(
@@ -67,7 +66,9 @@ class OnboardingScreen extends StatelessWidget {
                           vertical: 20)),
                     ),
                     onPressed: () async {
-                      FirebaseFirestore.instance.collection("Admins").add({"admin": true});
+                      FirebaseFirestore.instance
+                          .collection("Admins")
+                          .add({"admin": true});
                       final SharedPreferences prefs =
                           await SharedPreferences.getInstance();
                       await prefs.setBool("opened", true);

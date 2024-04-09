@@ -11,9 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bionexus_admin/hex_color.dart';
 //imports
 
-
-
-
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -55,19 +52,18 @@ class _MyAppState extends State<MyApp> {
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: ButtonStyle(
-            padding: MaterialStateProperty.all<EdgeInsets>(
-              const EdgeInsets.all(24),
-            ),
-            backgroundColor: MaterialStateProperty.all<Color>(AERO),
-            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-            textStyle: MaterialStatePropertyAll(TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            letterSpacing: 2,
-                            fontFamily: "montserrat",
-                            fontWeight: FontWeight.bold,
-                            ))
-          ),
+              padding: MaterialStateProperty.all<EdgeInsets>(
+                const EdgeInsets.all(24),
+              ),
+              backgroundColor: MaterialStateProperty.all<Color>(AERO),
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+              textStyle: MaterialStatePropertyAll(TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                letterSpacing: 2,
+                fontFamily: "montserrat",
+                fontWeight: FontWeight.bold,
+              ))),
         ),
       ),
       title: 'BioNexus',
