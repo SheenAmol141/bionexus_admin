@@ -40,7 +40,6 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print(FirebaseAuth.instance.currentUser);
   }
 
   @override

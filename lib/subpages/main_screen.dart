@@ -1,13 +1,9 @@
 // ignore_for_file: prefer_const_constructors
-
-import 'dart:html';
-
-import 'package:bionexus_admin/db_helper.dart';
+import 'package:bionexus_admin/subpages/add_team.dart';
 import 'package:bionexus_admin/subpages/fitted_video.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bionexus_admin/hex_color.dart';
 
@@ -21,6 +17,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   bool isAdmin = false;
   bool loaded = false;
+    bool noTeam = false;
 
   void isitAdmin() {
     String email = FirebaseAuth.instance.currentUser!.email!;
@@ -39,6 +36,20 @@ class _MainScreenState extends State<MainScreen> {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text("Signed in")));
       });
+    }); 
+  }
+
+  void isitinTeam() {
+    String email = FirebaseAuth.instance.currentUser!.email!;
+    late FirebaseFirestore db = FirebaseFirestore.instance;
+    db.collection("Users").doc(email).get().then((snapshot) {
+      print(snapshot["team-license"]);
+      if (snapshot["team-license"] == null) {
+        print("teamlicense is null");
+        setState(() {
+          noTeam = true;
+        });
+      }
     });
   }
 
@@ -48,6 +59,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     if (FirebaseAuth.instance.currentUser != null) {
       isitAdmin();
+      isitinTeam();
     }
   }
 
@@ -57,7 +69,7 @@ class _MainScreenState extends State<MainScreen> {
         ? loaded
             ? isAdmin
                 ? AdminContent()
-                : ClientContent()
+                : ClientContent(team: noTeam)
             : Center(
                 child: CircularProgressIndicator(),
               )
@@ -65,7 +77,6 @@ class _MainScreenState extends State<MainScreen> {
             // --------------------------------------------------------------------------------------------------- loginScreen
 
             children: [
-              FittedVideo(),
               Opacity(
                 opacity: .9,
                 child: Container(
@@ -96,7 +107,7 @@ class _MainScreenState extends State<MainScreen> {
                             topRight: Radius.circular(30))),
                     height: 500,
                     width: MediaQuery.of(context).size.width,
-                    child: Container(
+                    child: Container( //Login container
                       child: SignInScreen(providers: [
                         EmailAuthProvider(),
                       ], actions: [
@@ -104,9 +115,12 @@ class _MainScreenState extends State<MainScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                               content: Text("Account created successfully")));
                           isitAdmin();
+                          isitinTeam();
+                          FirebaseFirestore.instance.collection("Users").doc(FirebaseAuth.instance.currentUser!.email).set({"uid": FirebaseAuth.instance.currentUser!.uid, "team-license": null});
                         }),
                         AuthStateChangeAction<SignedIn>((context, state) {
                           isitAdmin();
+                          isitinTeam();
                         })
                       ]),
                     ),
@@ -257,8 +271,10 @@ class _AdminContentState extends State<AdminContent> {
   }
 }
 
+
 class ClientContent extends StatefulWidget {
-  const ClientContent({super.key});
+  bool team;
+   ClientContent({super.key, required this.team});
 
   @override
   State<ClientContent> createState() => _ClientContentState();
@@ -273,7 +289,7 @@ class _ClientContentState extends State<ClientContent> {
 
     // VARIABLES ---------------------
 
-    return Scaffold(
+    return  widget.team ? AddTeam() : Scaffold(
         appBar: AppBar(
           centerTitle: true,
           title: Text(
@@ -395,3 +411,4 @@ class _ClientContentState extends State<ClientContent> {
                         : null);
   }
 }
+

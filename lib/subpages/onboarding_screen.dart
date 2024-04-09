@@ -16,7 +16,7 @@ class OnboardingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        FittedVideo(),
+        
         Opacity(
           opacity: .7,
           child: Container(
@@ -67,12 +67,7 @@ class OnboardingScreen extends StatelessWidget {
                           vertical: 20)),
                     ),
                     onPressed: () async {
-
                       FirebaseFirestore.instance.collection("Admins").add({"admin": true});
-
-
-
-
                       final SharedPreferences prefs =
                           await SharedPreferences.getInstance();
                       await prefs.setBool("opened", true);
