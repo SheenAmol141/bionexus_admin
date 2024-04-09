@@ -10,7 +10,7 @@ class FittedVideo extends StatefulWidget {
 
 class _FittedVideoState extends State<FittedVideo> {
   late VideoPlayerController controller;
-  
+
   @override
   void initState() {
     super.initState();

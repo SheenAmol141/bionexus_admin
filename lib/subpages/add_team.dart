@@ -1,3 +1,5 @@
+import 'package:bionexus_admin/db_helper.dart';
+import 'package:bionexus_admin/subpages/main_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,21 +11,9 @@ class AddTeam extends StatefulWidget {
   State<AddTeam> createState() => _AddTeamState();
 }
 
-void createTeam() {
-  String uid = FirebaseAuth.instance.currentUser!.uid;
-  String email = FirebaseAuth.instance.currentUser!.email!;
-  FirebaseFirestore.instance
-      .collection("Teams")
-      .doc(uid)
-      .set({"root-user": email});
-  FirebaseFirestore.instance
-      .collection("Users")
-      .doc(email)
-      .update({"team-license": uid});
-}
-
 class _AddTeamState extends State<AddTeam> {
   TextEditingController _teamIdController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,7 +37,7 @@ class _AddTeamState extends State<AddTeam> {
                 OutlinedButton(
                   onPressed: () {
                     // Handle "Create a new team" button press
-                    createTeam();
+                    createTeam(context);
                   },
                   child: Text('Create a new team'),
                 ),
@@ -65,6 +55,8 @@ class _AddTeamState extends State<AddTeam> {
               onPressed: () {
                 // Handle "Join an existing team" button with Team ID press
                 final teamId = _teamIdController.text;
+
+                joinTeam(teamId, context);
                 // Use the team ID to join the team (logic not shown here)
               },
               child: Text('Join with Team ID'),

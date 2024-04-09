@@ -1,4 +1,5 @@
 // ignore_for_file: prefer_const_constructors
+import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/add_team.dart';
 import 'package:bionexus_admin/subpages/fitted_video.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -32,9 +33,11 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         loaded = true;
       });
-      Future.delayed(Duration(seconds: 1), () {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Signed in")));
+      Future.delayed(Duration(seconds: 0), () {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Signed in"),
+          duration: Duration(milliseconds: 500),
+        ));
       });
     });
   }
@@ -114,7 +117,8 @@ class _MainScreenState extends State<MainScreen> {
                       ], actions: [
                         AuthStateChangeAction<UserCreated>((context, state) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("Account created successfully")));
+                              content: Text("Account created successfully"),
+                              duration: Duration(milliseconds: 500)));
                           isitAdmin();
                           isitinTeam();
                           FirebaseFirestore.instance
@@ -248,11 +252,7 @@ class _AdminContentState extends State<AdminContent> {
                 ),
 
                 onTap: () {
-                  FirebaseAuth.instance.signOut();
-                  Future.delayed(Duration(milliseconds: 300), () {
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => MainScreen()));
-                  });
+                  logout(context);
                 },
               ),
             ],
@@ -390,11 +390,7 @@ class _ClientContentState extends State<ClientContent> {
                     ),
 
                     onTap: () {
-                      FirebaseAuth.instance.signOut();
-                      Future.delayed(Duration(milliseconds: 300), () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (context) => MainScreen()));
-                      });
+                      logout(context);
                     },
                   ),
                 ],
