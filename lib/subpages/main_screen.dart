@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/add_team.dart';
-import 'package:bionexus_admin/subpages/fitted_video.dart';
+import 'package:bionexus_admin/subpages/settings_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
@@ -278,6 +278,7 @@ class _AdminContentState extends State<AdminContent> {
   }
 }
 
+// ignore: must_be_immutable
 class ClientContent extends StatefulWidget {
   bool team;
   ClientContent({super.key, required this.team});
@@ -409,9 +410,7 @@ class _ClientContentState extends State<ClientContent> {
                             child: Text("Sales"),
                           )
                         : currentPage == "Settings"
-                            ? Center(
-                                child: Text("Settings"),
-                              )
+                            ? SettingsPage()
                             : null);
   }
 }

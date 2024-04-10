@@ -4,9 +4,10 @@ import 'package:bionexus_admin/firebase_options.dart';
 import 'package:bionexus_admin/subpages/main_screen.dart';
 import 'package:bionexus_admin/subpages/onboarding_screen.dart';
 import 'package:bionexus_admin/subpages/splash.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bionexus_admin/hex_color.dart';
 //imports
@@ -34,15 +35,25 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            padding: MaterialStatePropertyAll(
+              EdgeInsets.all(20),
+            ),
+            backgroundColor: MaterialStateProperty.all<Color>(AERO),
+            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+            textStyle: MaterialStatePropertyAll(GoogleFonts.montserrat(
+                fontWeight: FontWeight.w600, fontSize: 15, letterSpacing: 1)),
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5.0),
+              ),
+            ),
+          ),
+        ),
         fontFamily: "montserrat",
         primaryColor: PROCESS_CYAN,
         inputDecorationTheme: InputDecorationTheme(

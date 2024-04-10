@@ -1,5 +1,4 @@
-import 'dart:js';
-
+import 'package:bionexus_admin/subpages/add_team.dart';
 import 'package:bionexus_admin/subpages/main_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -68,7 +67,7 @@ void joinTeam(String team_code, context) {
   });
 }
 
-logout(context) {
+void logout(context) {
   FirebaseAuth.instance.signOut();
   Navigator.of(context)
       .pushReplacement(MaterialPageRoute(builder: (context) => MainScreen()));
@@ -77,4 +76,8 @@ logout(context) {
     content: Text("Logged out successfully"),
     duration: Duration(milliseconds: 500),
   ));
+}
+
+void changeTeam(context) {
+  Navigator.push(context, MaterialPageRoute(builder: (context) => AddTeam()));
 }

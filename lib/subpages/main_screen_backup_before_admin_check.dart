@@ -20,12 +20,9 @@
 
 // ignore_for_file: prefer_const_constructors
 
-import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/fitted_video.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bionexus_admin/hex_color.dart';
 

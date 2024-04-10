@@ -79,5 +79,3 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.example.bionexusAdmin.RunnerTests',
   );
 }
-
-
