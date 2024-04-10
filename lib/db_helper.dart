@@ -26,10 +26,10 @@ Future<bool> doesAdminExist(String email) async {
 void createTeam(context) {
   String uid = FirebaseAuth.instance.currentUser!.uid;
   String email = FirebaseAuth.instance.currentUser!.email!;
-  FirebaseFirestore.instance
-      .collection("Teams")
-      .doc(uid)
-      .set({"root-user": email});
+  FirebaseFirestore.instance.collection("Teams").doc(uid).set({
+    "root-user": email,
+    "members": [email]
+  });
   FirebaseFirestore.instance
       .collection("Users")
       .doc(email)
@@ -42,24 +42,102 @@ void createTeam(context) {
           }));
 }
 
-void joinTeam(String team_code, context) {
+void joinTeam(String teamCode, context) {
   String email = FirebaseAuth.instance.currentUser!.email!;
   final team_check =
-      FirebaseFirestore.instance.collection("Teams").doc(team_code);
+      FirebaseFirestore.instance.collection("Teams").doc(teamCode);
 
   team_check.get().then((snapshot) {
     if (snapshot.exists) {
       FirebaseFirestore.instance
           .collection("Users")
           .doc(email)
-          .update({"team-license": team_code})
-          .then((value) => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Joined team successfuly"))))
-          .then(
-              (value) => Future.delayed(const Duration(microseconds: 350), () {
+          .get()
+          .then((value) {
+        if (value["team-license"] != null) {
+//remove from old team
+
+          String oldTeamCode = '';
+          String rootUser = '';
+          List<dynamic> oldMembers = [];
+          FirebaseFirestore.instance
+              .collection("Users")
+              .doc(email)
+              .get()
+              .then((value) {
+            //GET OLD CODE
+            oldTeamCode = value["team-license"];
+            print(oldTeamCode);
+          }).then((value) {
+            //
+            FirebaseFirestore.instance
+                .collection("Teams")
+                .doc(oldTeamCode)
+                .get()
+                .then((value) {
+              oldMembers = value['members'];
+              rootUser = value["root-user"];
+
+              oldMembers.remove(email);
+              //member removed
+            }).then((value) {
+              //update to old team
+              FirebaseFirestore.instance
+                  .collection("Teams")
+                  .doc(oldTeamCode)
+                  .set({"root-user": rootUser, "members": oldMembers}).then(
+                      (value) {
+                //new team
+                FirebaseFirestore.instance
+                    .collection("Users")
+                    .doc(email)
+                    .update({"team-license": teamCode})
+                    .then((value) {
+                      team_check.get().then((value) {
+                        final members = value["members"];
+                        team_check.update({
+                          "members": [...members, email]
+                        });
+                      });
+                    })
+                    .then((value) => ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text("Joined team successfuly"))))
+                    .then((value) =>
+                        Future.delayed(const Duration(microseconds: 350), () {
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MainScreen()));
+                        }));
+              });
+            });
+          });
+
+          //remove old team
+        } else {
+//new team
+          FirebaseFirestore.instance
+              .collection("Users")
+              .doc(email)
+              .update({"team-license": teamCode})
+              .then((value) {
+                team_check.get().then((value) {
+                  final members = value["members"];
+                  team_check.update({
+                    "members": [...members, email]
+                  });
+                });
+              })
+              .then((value) => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Joined team successfuly"))))
+              .then((value) =>
+                  Future.delayed(const Duration(microseconds: 350), () {
                     Navigator.pushReplacement(context,
                         MaterialPageRoute(builder: (context) => MainScreen()));
                   }));
+        }
+      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Please enter a valid Team ID")));
@@ -81,3 +159,4 @@ void logout(context) {
 void changeTeam(context) {
   Navigator.push(context, MaterialPageRoute(builder: (context) => AddTeam()));
 }
+// ABOVE THIS IS FOR USER TEAM JOIN AND CREATE AND SWITCH -----------------------------------------------------------------------------------------------------------------------------------------------------
