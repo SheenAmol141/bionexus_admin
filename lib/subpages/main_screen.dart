@@ -1,12 +1,14 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/add_team.dart';
+import 'package:bionexus_admin/subpages/patients_queue_page.dart';
 import 'package:bionexus_admin/subpages/settings_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:bionexus_admin/hex_color.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -288,7 +290,61 @@ class ClientContent extends StatefulWidget {
 }
 
 class _ClientContentState extends State<ClientContent> {
+  bool loaded = false;
+  late DocumentSnapshot userData;
+  late DocumentSnapshot teamData;
+
   String currentPage = "";
+
+  void getTeamData(teamcode) {
+    FirebaseFirestore.instance
+        .collection("Teams")
+        .doc(teamcode)
+        .get()
+        .then((value) {
+      setState(() {
+        teamData = value;
+      });
+    });
+  }
+
+  void getUserData(String email) {
+    FirebaseFirestore.instance
+        .collection("Users")
+        .doc(email)
+        .get()
+        .then((value) {
+      getTeamData(value["team-license"]);
+      setState(() {
+        userData = value;
+        loaded = true;
+      });
+      ;
+    });
+  }
+
+  void changePage(page) {
+    if (teamData["root-user"] == userData["email"]) {
+      setState(() {
+        currentPage = page;
+      });
+    } else if (userData[page]) {
+      setState(() {
+        currentPage = page;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("You do you have permission to view $page")));
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getUserData(FirebaseAuth.instance.currentUser!.email!);
+  }
+
   @override
   Widget build(BuildContext context) {
     TextStyle _text = TextStyle(color: Colors.white);
@@ -298,119 +354,176 @@ class _ClientContentState extends State<ClientContent> {
 
     return widget.team
         ? AddTeam()
-        : Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              title: Text(
-                "BIONEXUS",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: "montserrat",
-                    fontWeight: FontWeight.bold),
-              ),
-              iconTheme: IconThemeData(color: Colors.white),
-              backgroundColor: EMERALD,
-            ),
-            drawer: Drawer(
-              child: ListView(
-                children: [
-                  UserAccountsDrawerHeader(
-                    decoration: BoxDecoration(color: EMERALD),
-                    accountName: Text(
-                      'Hello ${FirebaseAuth.instance.currentUser!.displayName ?? "unnamed"}!',
-                      style: _text,
-                    ),
-                    accountEmail: Text(
-                      '${FirebaseAuth.instance.currentUser!.email}',
-                      style: _text,
-                    ),
-                  ),
-                  ListTile(
-                    tileColor: currentPage.isEmpty
-                        ? Colors.grey.withOpacity(0.3)
-                        : currentPage == "Patient Queue"
+        : loaded
+            ? Scaffold(
+                appBar: AppBar(
+                  centerTitle: true,
+                  title: Text(currentPage.isEmpty ? "BIONEXUS" : currentPage,
+                      style: GoogleFonts.montserrat(
+                          fontWeight: FontWeight.w600, color: Colors.white)),
+                  iconTheme: IconThemeData(color: Colors.white),
+                  backgroundColor: EMERALD,
+                ),
+                drawer: Drawer(
+                  child: ListView(
+                    children: [
+                      UserAccountsDrawerHeader(
+                        decoration: BoxDecoration(color: EMERALD),
+                        accountName: Text(
+                          'Hello ${FirebaseAuth.instance.currentUser!.displayName ?? "unnamed"}!',
+                          style: _text,
+                        ),
+                        accountEmail: Text(
+                          '${FirebaseAuth.instance.currentUser!.email}',
+                          style: _text,
+                        ),
+                      ),
+                      ListTile(
+                        tileColor: currentPage == "Patients Queue"
                             ? Colors.grey.withOpacity(0.2)
                             : null,
-                    trailing: Icon(Icons.badge),
-                    // iconColor: AERO,
-                    title: Text(
-                      "Patient Queue",
-                      style: _listText,
-                    ),
-                    onTap: (() {
-                      setState(() {
-                        currentPage = "Patient Queue";
-                      });
-                      print(currentPage);
-                      Navigator.pop(context);
-                    }),
-                  ),
-                  ListTile(
-                    tileColor: currentPage == "Sales"
-                        ? Colors.grey.withOpacity(0.3)
-                        : null,
-                    trailing: Icon(Icons.queue_rounded),
-                    // iconColor: AERO,
-                    title: Text(
-                      "Sales",
-                      style: _listText,
-                    ),
-                    onTap: (() {
-                      setState(() {
-                        currentPage = "Sales";
-                      });
-                      print(currentPage);
-                      Navigator.pop(context);
-                    }),
-                  ),
-                  Divider(),
-                  ListTile(
-                    tileColor: currentPage == "Settings"
-                        ? Colors.grey.withOpacity(0.3)
-                        : null,
-                    trailing: Icon(Icons.settings),
-                    // iconColor: AERO,
-                    title: Text(
-                      "Settings",
-                      style: _listText,
-                    ),
-                    onTap: (() {
-                      setState(() {
-                        currentPage = "Settings";
-                      });
-                      print(currentPage);
-                      Navigator.pop(context);
-                    }),
-                  ),
-                  ListTile(
-                    trailing: Icon(Icons.exit_to_app),
-                    // iconColor: AERO,
-                    title: Text(
-                      "Log Out",
-                      style: _listText,
-                    ),
+                        trailing: Icon(Icons.queue_rounded),
+                        // iconColor: AERO,
+                        title: Text(
+                          "Patients Queue",
+                          style: _listText,
+                        ),
+                        onTap: (() {
+                          changePage("Patients Queue");
+                          print(currentPage);
+                          Navigator.pop(context);
+                        }),
+                      ),
+                      ListTile(
+                        tileColor: currentPage == "Patient Records"
+                            ? Colors.grey.withOpacity(0.2)
+                            : null,
+                        trailing: Icon(Icons.medical_services),
+                        // iconColor: AERO,
+                        title: Text(
+                          "Patient Records",
+                          style: _listText,
+                        ),
+                        onTap: (() {
+                          changePage("Patient Records");
+                          print(currentPage);
+                          Navigator.pop(context);
+                        }),
+                      ),
+                      ListTile(
+                        tileColor: currentPage == "Inventory"
+                            ? Colors.grey.withOpacity(0.2)
+                            : null,
+                        trailing: Icon(Icons.inventory_2_rounded),
+                        // iconColor: AERO,
+                        title: Text(
+                          "Inventory",
+                          style: _listText,
+                        ),
+                        onTap: (() {
+                          changePage("Inventory");
+                          print(currentPage);
+                          Navigator.pop(context);
+                        }),
+                      ),
+                      ListTile(
+                        tileColor: currentPage == "Lab Specimen Requests"
+                            ? Colors.grey.withOpacity(0.2)
+                            : null,
+                        trailing: Icon(Icons.science_rounded),
+                        // iconColor: AERO,
+                        title: Text(
+                          "Lab Specimen Requests",
+                          style: _listText,
+                        ),
+                        onTap: (() {
+                          changePage("Lab Specimen Requests");
+                          print(currentPage);
+                          Navigator.pop(context);
+                        }),
+                      ),
+                      ListTile(
+                        tileColor: currentPage == "Lab Records"
+                            ? Colors.grey.withOpacity(0.2)
+                            : null,
+                        trailing: Icon(Icons.query_stats_rounded),
+                        // iconColor: AERO,
+                        title: Text(
+                          "Lab Records",
+                          style: _listText,
+                        ),
+                        onTap: (() {
+                          changePage("Lab Records");
+                          print(currentPage);
+                          Navigator.pop(context);
+                        }),
+                      ),
+                      ListTile(
+                        tileColor: currentPage == "TPS"
+                            ? Colors.grey.withOpacity(0.2)
+                            : null,
+                        trailing: Icon(Icons.receipt_long_outlined),
+                        // iconColor: AERO,
+                        title: Text(
+                          "TPS",
+                          style: _listText,
+                        ),
+                        onTap: (() {
+                          changePage("TPS");
+                          print(currentPage);
+                          Navigator.pop(context);
+                        }),
+                      ),
+                      Divider(),
+                      ListTile(
+                        tileColor: currentPage == "Settings"
+                            ? Colors.grey.withOpacity(0.3)
+                            : null,
+                        trailing: Icon(Icons.settings),
+                        // iconColor: AERO,
+                        title: Text(
+                          "Settings",
+                          style: _listText,
+                        ),
+                        onTap: (() {
+                          setState(() {
+                            currentPage = "Settings";
+                          });
+                          print(currentPage);
+                          Navigator.pop(context);
+                        }),
+                      ),
+                      ListTile(
+                        trailing: Icon(Icons.exit_to_app),
+                        // iconColor: AERO,
+                        title: Text(
+                          "Log Out",
+                          style: _listText,
+                        ),
 
-                    onTap: () {
-                      logout(context);
-                    },
+                        onTap: () {
+                          logout(context);
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            body: currentPage.isEmpty
-                ? Center(
-                    child: Text("Licenses"),
-                  )
-                : currentPage == "Licenses"
+                ),
+                body: currentPage.isEmpty
                     ? Center(
-                        child: Text("Licenses"),
+                        child: Text("Welcome to Bionexus"),
                       )
-                    : currentPage == "Sales"
-                        ? Center(
-                            child: Text("Sales"),
-                          )
-                        : currentPage == "Settings"
-                            ? SettingsPage()
-                            : null);
+                    : currentPage == "Settings"
+                        ? SettingsPage()
+                        : currentPage == "Patients Queue"
+                            ? PatientsQueuePage()
+                            : Container(
+                                child: Center(
+                                  child: Text("WIP"),
+                                ),
+                              ))
+            : Center(
+                child: CircularProgressIndicator(
+                color: AERO,
+              ));
   }
 }

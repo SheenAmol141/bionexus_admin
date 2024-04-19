@@ -4,13 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-bool checkAdmin(String email) {
-  final _db = FirebaseFirestore.instance;
-  _db.collection("Admins").doc(email);
-
-  return true;
-}
-
 Future<bool> doesAdminExist(String email) async {
   try {
     final docRef = FirebaseFirestore.instance.collection("Admins").doc(email);
@@ -160,3 +153,8 @@ void changeTeam(context) {
   Navigator.push(context, MaterialPageRoute(builder: (context) => AddTeam()));
 }
 // ABOVE THIS IS FOR USER TEAM JOIN AND CREATE AND SWITCH -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
