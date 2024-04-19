@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/add_team.dart';
+import 'package:bionexus_admin/subpages/inventory_page.dart';
 import 'package:bionexus_admin/subpages/patients_queue_page.dart';
 import 'package:bionexus_admin/subpages/settings_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,13 +36,10 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         loaded = true;
       });
-      Future.delayed(Duration(seconds: 0), () {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    }).then((value) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Signed in"),
           duration: Duration(milliseconds: 500),
-        ));
-      });
-    });
+        )));
   }
 
   void isitinTeam() {
@@ -516,11 +514,13 @@ class _ClientContentState extends State<ClientContent> {
                         ? SettingsPage()
                         : currentPage == "Patients Queue"
                             ? PatientsQueuePage()
-                            : Container(
-                                child: Center(
-                                  child: Text("WIP"),
-                                ),
-                              ))
+                            : currentPage == "Inventory"
+                                ? InventoryPage()
+                                : Container(
+                                    child: Center(
+                                      child: Text("WIP"),
+                                    ),
+                                  ))
             : Center(
                 child: CircularProgressIndicator(
                 color: AERO,
