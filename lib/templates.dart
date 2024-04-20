@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SectionTitlesTemplate extends StatelessWidget {
@@ -232,6 +233,59 @@ class Spacer20 extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 20,
+    );
+  }
+}
+
+class NumericTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue.copyWith(text: '');
+    } else if (newValue.text.compareTo(oldValue.text) != 0) {
+      final int selectionIndexFromTheRight =
+          newValue.text.length - newValue.selection.end;
+      var value = newValue.text;
+      if (newValue.text.length > 2) {
+        value = value.replaceAll(RegExp(r'\D'), '');
+        value = value.replaceAll(RegExp(r'\B(?=(\d{3})+(?!\d))'), ' ');
+        print("Value ---- $value");
+      }
+      return TextEditingValue(
+        text: value,
+        selection: TextSelection.collapsed(
+            offset: value.length - selectionIndexFromTheRight),
+      );
+    } else {
+      return newValue;
+    }
+  }
+}
+
+class InventoryItemWidget extends StatelessWidget {
+  final String name;
+
+  final int stock;
+
+  final double price;
+
+  InventoryItemWidget(
+      {required this.name, required this.stock, required this.price});
+
+  @override
+  Widget build(BuildContext context) {
+    return CardTemplate(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Name: $name'),
+          SizedBox(height: 8.0),
+          Text('Stock: $stock'),
+          SizedBox(height: 8.0),
+          Text('Price: \$$price'),
+        ],
+      ),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bionexus_admin/subpages/add_team.dart';
 import 'package:bionexus_admin/subpages/main_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -152,6 +154,21 @@ void logout(context) {
 void changeTeam(context) {
   Navigator.push(context, MaterialPageRoute(builder: (context) => AddTeam()));
 }
+
+Future<String> getTeam() async {
+  return await FirebaseFirestore.instance
+      .collection("Users")
+      .doc(FirebaseAuth.instance.currentUser!.email)
+      .get()
+      .then((value) => value["team-license"]);
+}
+
+
+
+
+
+
+
 // ABOVE THIS IS FOR USER TEAM JOIN AND CREATE AND SWITCH -----------------------------------------------------------------------------------------------------------------------------------------------------
 
 

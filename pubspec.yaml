@@ -44,6 +44,7 @@ dependencies:
   video_player: ^2.8.4
   cloud_firestore: ^4.16.0
   google_fonts: ^6.2.1
+  flutter_multi_formatter: ^2.12.8
 
 dev_dependencies:
   flutter_test:

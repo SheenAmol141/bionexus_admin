@@ -4,6 +4,7 @@ import 'package:bionexus_admin/firebase_options.dart';
 import 'package:bionexus_admin/subpages/main_screen.dart';
 import 'package:bionexus_admin/subpages/onboarding_screen.dart';
 import 'package:bionexus_admin/subpages/splash.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -24,6 +25,8 @@ Future main() async {
     home: Splash(showOnboard: showOnboard),
   ));
 }
+
+final firebase = FirebaseFirestore.instance;
 
 class MyApp extends StatefulWidget {
   final bool showOnboard;

@@ -1,5 +1,12 @@
+import 'package:bionexus_admin/db_helper.dart';
+import 'package:bionexus_admin/hex_color.dart';
+import 'package:bionexus_admin/main.dart';
 import 'package:bionexus_admin/templates.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class InventoryPage extends StatefulWidget {
   const InventoryPage({super.key});
@@ -11,114 +18,121 @@ class InventoryPage extends StatefulWidget {
 class _InventoryPageState extends State<InventoryPage> {
   @override
   Widget build(BuildContext context) {
+    void getInventory() {} // TODO: INVENTORY
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
+          backgroundColor: AERO,
+          foregroundColor: Colors.white,
+          focusColor: EMERALD,
+          hoverColor: EMERALD,
           child: Icon(Icons.add),
           onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => Material(child: AddInventoryItem())))),
-      body: Container(),
+              builder: (context) =>
+                  const Material(child: AddInventoryItem())))),
+      body: ListView.separated(
+          itemBuilder: (context, index) {},
+          separatorBuilder: (context, index) => SizedBox(
+                height: 20,
+              ),
+          itemCount: itemCount),
     );
   }
 }
 
-// class AddInventoryItem extends StatelessWidget {
-//   const AddInventoryItem({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Center(
-//       child: CardTemplate(
-//           child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.center,
-//         children: [],
-//       )),
-//     );
-//   }
-// }
-
-class AddInventoryItem extends StatefulWidget {
-  const AddInventoryItem({Key? key}) : super(key: key);
-
-  @override
-  State<AddInventoryItem> createState() => _AddInventoryItemState();
-}
-
-class _AddInventoryItemState extends State<AddInventoryItem> {
-  final _itemNameController = TextEditingController();
-  final _initialStockController = TextEditingController();
-  double _price = 0.0;
-
-  @override
-  void dispose() {
-    _itemNameController.dispose();
-    _initialStockController.dispose();
-    super.dispose();
-  }
+class AddInventoryItem extends StatelessWidget {
+  const AddInventoryItem({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          TextField(
-            controller: _itemNameController,
-            decoration: const InputDecoration(
-              labelText: "Item Name",
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 16.0),
-          TextField(
-            controller: _initialStockController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: "Initial Stock",
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 16.0),
-          Row(
+    TextEditingController _price = TextEditingController();
+    TextEditingController _initialStock = TextEditingController();
+    TextEditingController _itemName = TextEditingController();
+    final key = GlobalKey<FormState>();
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text("Add an Item",
+            style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.w600, color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: EMERALD,
+      ),
+      body: Form(
+        key: key,
+        child: Container(
+          padding: EdgeInsets.all(20),
+          child: Column(
             children: [
-              Text("Price: \$"),
-              Expanded(
-                child: Stack(
-                  children: [
-                    // Show current price as text
-                    Text(
-                      _price.toStringAsFixed(2),
-                      style: const TextStyle(fontSize: 16.0),
-                    ),
-                    // Draggable widget to update price
-                    Positioned.fill(
-                      child: GestureDetector(
-                        onHorizontalDragUpdate: (details) {
-                          setState(() {
-                            _price = (_price + details.delta.dx / 10)
-                                .clamp(0.0, double.infinity);
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+              TextFormField(
+                controller: _itemName,
+                decoration: InputDecoration(hintText: "Item Name"),
+                validator: (value) => value == ''
+                    ? "Should not be empty"
+                    : value!.length < 3
+                        ? "Should not be less than 3"
+                        : null,
               ),
+              SizedBox(
+                height: 20,
+              ),
+              TextFormField(
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                keyboardType: TextInputType.number,
+                controller: _initialStock,
+                decoration: InputDecoration(hintText: "Initial Stock"),
+                validator: (value) =>
+                    value == '' ? "Should not be empty" : null,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              TextFormField(
+                validator: (value) =>
+                    value == '' ? "Should not be empty" : null,
+                controller: _price,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  MoneyInputFormatter(
+                      leadingSymbol: MoneySymbols.DOLLAR_SIGN,
+                      useSymbolPadding: true,
+                      mantissaLength: 2 // the length of the fractional side
+                      )
+                ],
+                decoration: InputDecoration(hintText: "Price"),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              ElevatedButton(
+                  onPressed: () async {
+                    // add item to firestore
+                    final good = key.currentState!.validate();
+                    if (good) {
+                      FirebaseFirestore.instance
+                          .collection("Teams")
+                          .doc(await getTeam())
+                          .collection("Inventory")
+                          .doc("${_itemName.text}")
+                          .set({
+                        "item_name": _itemName.text,
+                        "stock": int.parse(_initialStock.text),
+                        "price":
+                            (double.parse(toNumericString(_price.text)) / 100)
+                      }).then((value) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("Item added successfuly")));
+                        Navigator.of(context).pop();
+                      });
+
+                      print(double.parse(toNumericString(_price.text)) / 100);
+                    }
+                  },
+                  child: Text("Add Item"))
             ],
           ),
-          const SizedBox(height: 16.0),
-          ElevatedButton(
-            onPressed: () {
-              // Handle form submission logic here
-              // Access item name, initial stock, and price from controllers
-              final itemName = _itemNameController.text;
-              final initialStock =
-                  int.tryParse(_initialStockController.text) ?? 0;
-
-              // Add logic to save the inventory item (e.g., to a database)
-            },
-            child: const Text("Add Item"),
-          ),
-        ],
+        ),
       ),
     );
   }
