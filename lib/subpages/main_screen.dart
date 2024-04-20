@@ -126,7 +126,8 @@ class _MainScreenState extends State<MainScreen> {
                               .doc(FirebaseAuth.instance.currentUser!.email)
                               .set({
                             "uid": FirebaseAuth.instance.currentUser!.uid,
-                            "team-license": null
+                            "team-license": null,
+                            "email": FirebaseAuth.instance.currentUser!.email
                           });
                         }),
                         AuthStateChangeAction<SignedIn>((context, state) {

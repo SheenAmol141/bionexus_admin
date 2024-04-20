@@ -3,6 +3,8 @@ import 'package:bionexus_admin/hex_color.dart';
 import 'package:bionexus_admin/main.dart';
 import 'package:bionexus_admin/templates.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
@@ -16,27 +18,145 @@ class InventoryPage extends StatefulWidget {
 }
 
 class _InventoryPageState extends State<InventoryPage> {
+  final fstore = FirebaseFirestore.instance;
+
+  List<DocumentSnapshot> items = [];
+
+// DocumentReference reference = FirebaseFirestore.instance.collection('collection').doc("document");
+//     reference.snapshots().listen((querySnapshot) {
+
+//       setState(() {
+//         field =querySnapshot.get("field");
+//       });
+//     });
+
+  void listen() async {
+    fstore
+        .collection("Teams")
+        .doc(await getTeam())
+        .collection("Inventory")
+        .snapshots();
+  }
+
+  void getInventory() async {
+    fstore
+        .collection("Teams")
+        .doc(await getTeam())
+        .collection("Inventory")
+        .get()
+        .then((querysnap) {
+      for (var doc in querysnap.docs) {
+        items.add(doc);
+      }
+      print(items);
+
+      setState(() {});
+    });
+  }
+
+  bool loaded = false;
+  String currentUserTeam = "";
+  getcurrentUserTeam() {
+    FirebaseFirestore.instance
+        .collection("Users")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .get()
+        .then((value) {
+      print(value["team-license"]);
+
+      setState(() {
+        loaded = true;
+        currentUserTeam = value["team-license"];
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getcurrentUserTeam();
+  }
+
   @override
   Widget build(BuildContext context) {
-    void getInventory() {} // TODO: INVENTORY
-
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-          backgroundColor: AERO,
-          foregroundColor: Colors.white,
-          focusColor: EMERALD,
-          hoverColor: EMERALD,
-          child: Icon(Icons.add),
-          onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) =>
-                  const Material(child: AddInventoryItem())))),
-      body: ListView.separated(
-          itemBuilder: (context, index) {},
-          separatorBuilder: (context, index) => SizedBox(
-                height: 20,
-              ),
-          itemCount: itemCount),
-    );
+    return Container(
+        child: loaded
+            ? Scaffold(
+                floatingActionButton: FloatingActionButton(
+                    backgroundColor: AERO,
+                    foregroundColor: Colors.white,
+                    focusColor: EMERALD,
+                    hoverColor: EMERALD,
+                    child: Icon(Icons.add),
+                    onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const Material(child: AddInventoryItem())))),
+                body: Container(
+                  color: CupertinoColors.extraLightBackgroundGray,
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: fstore
+                        .collection("Teams")
+                        .doc(currentUserTeam)
+                        .collection("Inventory")
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      items = [];
+                      if (snapshot.hasData) {
+                        for (var doc in snapshot.data!.docs.reversed.toList()) {
+                          items.add(doc);
+                        }
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: ListView.builder(
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            return CardTemplate(
+                                child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text("${items[index]["item_name"]}",
+                                    style: GoogleFonts.montserrat(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 25)),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Row(children: [
+                                      Icon(
+                                        Icons.inventory_2_rounded,
+                                        size: 30,
+                                      ),
+                                      SizedBox(
+                                        width: 20,
+                                      ),
+                                      Text("${items[index]["stock"]}")
+                                    ]),
+                                    Row(children: [
+                                      Icon(
+                                        Icons.price_change,
+                                        size: 30,
+                                      ),
+                                      SizedBox(
+                                        width: 20,
+                                      ),
+                                      Text("${items[index]["price"]}")
+                                    ]),
+                                  ],
+                                ),
+                              ],
+                            ));
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              )
+            : CircularProgressIndicator());
   }
 }
 
