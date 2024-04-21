@@ -3,6 +3,7 @@ import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/add_team.dart';
 import 'package:bionexus_admin/subpages/inventory_page.dart';
 import 'package:bionexus_admin/subpages/patients_queue_page.dart';
+import 'package:bionexus_admin/subpages/services_page.dart';
 import 'package:bionexus_admin/subpages/settings_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
@@ -73,8 +74,10 @@ class _MainScreenState extends State<MainScreen> {
             ? isAdmin
                 ? AdminContent()
                 : ClientContent(team: noTeam)
-            : Center(
-                child: CircularProgressIndicator(),
+            : Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
               )
         : Stack(
             // --------------------------------------------------------------------------------------------------- loginScreen
@@ -127,7 +130,14 @@ class _MainScreenState extends State<MainScreen> {
                               .set({
                             "uid": FirebaseAuth.instance.currentUser!.uid,
                             "team-license": null,
-                            "email": FirebaseAuth.instance.currentUser!.email
+                            "email": FirebaseAuth.instance.currentUser!.email,
+                            "Inventory": false,
+                            "Patient Records": false,
+                            "Patients Queue": false,
+                            "TPS": false,
+                            "Medical Services": false,
+                            "Lab Records": false,
+                            "Lab Specimen Requests": false,
                           });
                         }),
                         AuthStateChangeAction<SignedIn>((context, state) {
@@ -397,7 +407,7 @@ class _ClientContentState extends State<ClientContent> {
                         tileColor: currentPage == "Patient Records"
                             ? Colors.grey.withOpacity(0.2)
                             : null,
-                        trailing: Icon(Icons.medical_services),
+                        trailing: Icon(Icons.file_present_rounded),
                         // iconColor: AERO,
                         title: Text(
                           "Patient Records",
@@ -421,6 +431,22 @@ class _ClientContentState extends State<ClientContent> {
                         ),
                         onTap: (() {
                           changePage("Inventory");
+                          print(currentPage);
+                          Navigator.pop(context);
+                        }),
+                      ),
+                      ListTile(
+                        tileColor: currentPage == "Medical Services"
+                            ? Colors.grey.withOpacity(0.2)
+                            : null,
+                        trailing: Icon(Icons.medical_services),
+                        // iconColor: AERO,
+                        title: Text(
+                          "Medical Services",
+                          style: _listText,
+                        ),
+                        onTap: (() {
+                          changePage("Medical Services");
                           print(currentPage);
                           Navigator.pop(context);
                         }),
@@ -517,11 +543,13 @@ class _ClientContentState extends State<ClientContent> {
                             ? PatientsQueuePage()
                             : currentPage == "Inventory"
                                 ? InventoryPage()
-                                : Container(
-                                    child: Center(
-                                      child: Text("WIP"),
-                                    ),
-                                  ))
+                                : currentPage == "Medical Services"
+                                    ? MedicalServicesPage()
+                                    : Container(
+                                        child: Center(
+                                          child: Text("WIP"),
+                                        ),
+                                      ))
             : Center(
                 child: CircularProgressIndicator(
                 color: AERO,

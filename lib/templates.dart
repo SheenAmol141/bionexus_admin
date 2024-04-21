@@ -55,6 +55,7 @@ class _MemberSettingsTemplateState extends State<MemberSettingsTemplate> {
   bool yesPatientsQueue = false;
   bool yesTPS = false;
   bool yesInventory = false;
+  bool yesServices = false;
   bool yesLabRecords = false;
   bool yesLabRequest = false;
 
@@ -71,6 +72,7 @@ class _MemberSettingsTemplateState extends State<MemberSettingsTemplate> {
         yesPatientsQueue = value["Patients Queue"];
         yesTPS = value["TPS"];
         yesInventory = value["Inventory"];
+        yesServices = value["Medical Services"];
         yesLabRecords = value["Lab Records"];
         yesLabRequest = value["Lab Specimen Requests"];
       });
@@ -172,6 +174,25 @@ class _MemberSettingsTemplateState extends State<MemberSettingsTemplate> {
             const Spacer20(),
             Text(
               "Inventory",
+              style: GoogleFonts.montserrat(
+                  fontSize: 15, fontWeight: FontWeight.w400),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Checkbox(
+                value: yesServices,
+                onChanged: (bool) {
+                  colRef.doc(email).update({"Medical Services": bool}).then(
+                      (value) =>
+                          colRef.doc(email).get().then((value) => setState(() {
+                                yesServices = value["Medical Services"];
+                              })));
+                }),
+            const Spacer20(),
+            Text(
+              "Medical Services",
               style: GoogleFonts.montserrat(
                   fontSize: 15, fontWeight: FontWeight.w400),
             ),

@@ -11,14 +11,14 @@ import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-class InventoryPage extends StatefulWidget {
-  const InventoryPage({super.key});
+class MedicalServicesPage extends StatefulWidget {
+  const MedicalServicesPage({super.key});
 
   @override
-  State<InventoryPage> createState() => _InventoryPageState();
+  State<MedicalServicesPage> createState() => _MedicalServicesPageState();
 }
 
-class _InventoryPageState extends State<InventoryPage> {
+class _MedicalServicesPageState extends State<MedicalServicesPage> {
   final fstore = FirebaseFirestore.instance;
 
   List<DocumentSnapshot> items = [];
@@ -93,14 +93,14 @@ class _InventoryPageState extends State<InventoryPage> {
                     onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute(
                             builder: (context) =>
-                                const Material(child: AddServicesItem())))),
+                                const Material(child: AddInventoryItem())))),
                 body: Container(
                   color: CupertinoColors.extraLightBackgroundGray,
                   child: StreamBuilder<QuerySnapshot>(
                     stream: fstore
                         .collection("Teams")
                         .doc(currentUserTeam)
-                        .collection("Inventory")
+                        .collection("Medical Services")
                         .snapshots(),
                     builder: (context, snapshot) {
                       items = [];
@@ -122,20 +122,22 @@ class _InventoryPageState extends State<InventoryPage> {
                                     style: GoogleFonts.montserrat(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 25)),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
+                                Column(
                                   children: [
-                                    Row(children: [
-                                      const Icon(
-                                        Icons.inventory_2_rounded,
-                                        size: 30,
-                                      ),
-                                      const SizedBox(
-                                        width: 20,
-                                      ),
-                                      Text("${items[index]["stock"]}")
-                                    ]),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Container(
+                                        width: MediaQuery.of(context)
+                                                .size
+                                                .width -
+                                            (MediaQuery.of(context).size.width *
+                                                .1),
+                                        child: Text(
+                                            "${items[index]["description"]}")),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
                                     Row(children: [
                                       const Icon(
                                         Icons.price_change,
@@ -162,8 +164,8 @@ class _InventoryPageState extends State<InventoryPage> {
   }
 }
 
-class AddServicesItem extends StatelessWidget {
-  const AddServicesItem({super.key});
+class AddInventoryItem extends StatelessWidget {
+  const AddInventoryItem({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -199,10 +201,11 @@ class AddServicesItem extends StatelessWidget {
                 height: 20,
               ),
               TextFormField(
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.multiline,
                 controller: _initialStock,
-                decoration: InputDecoration(hintText: "Initial Stock"),
+                decoration: InputDecoration(hintText: "Description"),
+                maxLines: null,
+                autocorrect: true,
                 validator: (value) =>
                     value == '' ? "Should not be empty" : null,
               ),
@@ -234,11 +237,11 @@ class AddServicesItem extends StatelessWidget {
                       FirebaseFirestore.instance
                           .collection("Teams")
                           .doc(await getTeam())
-                          .collection("Inventory")
+                          .collection("Medical Services")
                           .doc("${_itemName.text}")
                           .set({
                         "item_name": _itemName.text,
-                        "stock": int.parse(_initialStock.text),
+                        "description": _initialStock.text,
                         "price":
                             (double.parse(toNumericString(_price.text)) / 100)
                       }).then((value) {
