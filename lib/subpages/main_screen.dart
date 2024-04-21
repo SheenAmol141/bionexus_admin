@@ -551,8 +551,10 @@ class _ClientContentState extends State<ClientContent> {
                                         ),
                                       ))
             : Center(
-                child: CircularProgressIndicator(
-                color: AERO,
+                child: Scaffold(
+                body: CircularProgressIndicator(
+                  color: AERO,
+                ),
               ));
   }
 }

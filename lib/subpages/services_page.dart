@@ -176,7 +176,7 @@ class AddInventoryItem extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text("Add an Item",
+        title: Text("Add a Service",
             style: GoogleFonts.montserrat(
                 fontWeight: FontWeight.w600, color: Colors.white)),
         iconTheme: IconThemeData(color: Colors.white),
