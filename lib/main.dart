@@ -73,6 +73,14 @@ class _MyAppState extends State<MyApp> {
             borderRadius: BorderRadius.circular(8),
           ),
         ),
+        checkboxTheme: CheckboxThemeData(
+            fillColor: MaterialStateProperty.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return AERO;
+          } else {
+            return Colors.transparent;
+          }
+        })),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: ButtonStyle(
               padding: MaterialStateProperty.all<EdgeInsets>(

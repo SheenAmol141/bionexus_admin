@@ -190,7 +190,7 @@ class AddInventoryItem extends StatelessWidget {
             children: [
               TextFormField(
                 controller: _itemName,
-                decoration: InputDecoration(hintText: "Item Name"),
+                decoration: InputDecoration(labelText: "Item Name"),
                 validator: (value) => value == ''
                     ? "Should not be empty"
                     : value!.length < 3
@@ -203,7 +203,7 @@ class AddInventoryItem extends StatelessWidget {
               TextFormField(
                 keyboardType: TextInputType.multiline,
                 controller: _initialStock,
-                decoration: InputDecoration(hintText: "Description"),
+                decoration: InputDecoration(labelText: "Description"),
                 maxLines: null,
                 autocorrect: true,
                 validator: (value) =>
@@ -224,7 +224,7 @@ class AddInventoryItem extends StatelessWidget {
                       mantissaLength: 2 // the length of the fractional side
                       )
                 ],
-                decoration: InputDecoration(hintText: "Price"),
+                decoration: InputDecoration(labelText: "Price"),
               ),
               SizedBox(
                 height: 20,

@@ -89,7 +89,7 @@ class _InventoryPageState extends State<InventoryPage> {
                     foregroundColor: Colors.white,
                     focusColor: EMERALD,
                     hoverColor: EMERALD,
-                    child: Icon(Icons.add),
+                    child: const Icon(Icons.add),
                     onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute(
                             builder: (context) =>
@@ -188,7 +188,7 @@ class AddServicesItem extends StatelessWidget {
             children: [
               TextFormField(
                 controller: _itemName,
-                decoration: InputDecoration(hintText: "Item Name"),
+                decoration: InputDecoration(labelText: "Item Name"),
                 validator: (value) => value == ''
                     ? "Should not be empty"
                     : value!.length < 3
@@ -202,7 +202,7 @@ class AddServicesItem extends StatelessWidget {
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 keyboardType: TextInputType.number,
                 controller: _initialStock,
-                decoration: InputDecoration(hintText: "Initial Stock"),
+                decoration: InputDecoration(labelText: "Initial Stock"),
                 validator: (value) =>
                     value == '' ? "Should not be empty" : null,
               ),

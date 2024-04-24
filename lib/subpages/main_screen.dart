@@ -5,6 +5,7 @@ import 'package:bionexus_admin/subpages/inventory_page.dart';
 import 'package:bionexus_admin/subpages/patients_queue_page.dart';
 import 'package:bionexus_admin/subpages/services_page.dart';
 import 'package:bionexus_admin/subpages/settings_page.dart';
+import 'package:bionexus_admin/subpages/transactional_processing_system_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
@@ -543,13 +544,15 @@ class _ClientContentState extends State<ClientContent> {
                             ? PatientsQueuePage()
                             : currentPage == "Inventory"
                                 ? InventoryPage()
-                                : currentPage == "Medical Services"
-                                    ? MedicalServicesPage()
-                                    : Container(
-                                        child: Center(
-                                          child: Text("WIP"),
-                                        ),
-                                      ))
+                                : currentPage == "TPS"
+                                    ? TPS()
+                                    : currentPage == "Medical Services"
+                                        ? MedicalServicesPage()
+                                        : Container(
+                                            child: Center(
+                                              child: Text("WIP"),
+                                            ),
+                                          ))
             : Center(
                 child: Scaffold(
                 body: CircularProgressIndicator(

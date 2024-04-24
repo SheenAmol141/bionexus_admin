@@ -163,15 +163,36 @@ Future<String> getTeam() async {
       .then((value) => value["team-license"]);
 }
 
-
-
-
-
-
-
 // ABOVE THIS IS FOR USER TEAM JOIN AND CREATE AND SWITCH -----------------------------------------------------------------------------------------------------------------------------------------------------
 
+class TransactionItem {
+  String itemName;
+  int? numOfItems;
+  double price;
+  bool service;
 
+  TransactionItem(
+      {required this.itemName,
+      this.numOfItems,
+      required this.price,
+      required this.service});
 
+  ifService() {
+    return service;
+  }
 
+  getService() {
+    return {
+      "item_name": itemName,
+      "price": price,
+    };
+  }
 
+  getItem() {
+    return {
+      "item_name": itemName,
+      "price": price,
+      "number_of_items": numOfItems
+    };
+  }
+}
