@@ -49,6 +49,7 @@ class _MyAppState extends State<MyApp> {
               fontWeight: FontWeight.bold),
         ),
         iconTheme: IconThemeData(color: Colors.white),
+        colorScheme: ThemeData().colorScheme.copyWith(primary: AERO),
         backgroundColor: EMERALD,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
@@ -69,6 +70,10 @@ class _MyAppState extends State<MyApp> {
         fontFamily: "montserrat",
         primaryColor: PROCESS_CYAN,
         inputDecorationTheme: InputDecorationTheme(
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: AERO, width: 3.0),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -83,6 +88,11 @@ class _MyAppState extends State<MyApp> {
         })),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: ButtonStyle(
+              side: MaterialStatePropertyAll(
+                BorderSide(
+                  color: Colors.transparent,
+                ),
+              ),
               padding: MaterialStateProperty.all<EdgeInsets>(
                 const EdgeInsets.all(24),
               ),

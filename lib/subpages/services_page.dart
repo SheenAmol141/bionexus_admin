@@ -254,7 +254,7 @@ class AddInventoryItem extends StatelessWidget {
                       print(double.parse(toNumericString(_price.text)) / 100);
                     }
                   },
-                  child: Text("Add Item"))
+                  child: Text("Add Service"))
             ],
           ),
         ),

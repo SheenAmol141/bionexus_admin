@@ -1,12 +1,15 @@
 // ignore_for_file: avoid_unnecessary_containers, prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/hex_color.dart';
 import 'package:bionexus_admin/templates.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_multi_formatter/formatters/formatter_utils.dart';
 import 'package:flutter_multi_formatter/formatters/money_input_formatter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class TPS extends StatelessWidget {
   const TPS({super.key});
@@ -72,12 +75,12 @@ class NewTransaction extends StatefulWidget {
 }
 
 class _NewTransactionState extends State<NewTransaction> {
-  List<Widget> items = [
+  List<Widget> mainColumn = [
     Container(
       height: 20,
     ),
   ];
-
+  List<TransactionItem> items = [];
   Set<String> currentSelected = {"custom"};
   bool service = false;
 
@@ -92,6 +95,14 @@ class _NewTransactionState extends State<NewTransaction> {
           TextEditingController customPriceController = TextEditingController();
           TextEditingController customNumberController =
               TextEditingController();
+
+          void clearCustomForm() {
+            setStateHere(
+              () {
+                customKey.currentState!.reset();
+              },
+            );
+          }
 
           Widget wid = CardTemplate(
             child: Column(
@@ -140,6 +151,7 @@ class _NewTransactionState extends State<NewTransaction> {
                       ? Form(
                           key: customKey,
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               SizedBox(
                                 height: 30,
@@ -223,8 +235,50 @@ class _NewTransactionState extends State<NewTransaction> {
                                           2 // the length of the fractional side
                                       )
                                 ],
-                                decoration: InputDecoration(hintText: "Price"),
+                                decoration: InputDecoration(
+                                    focusColor: AERO, labelText: "Price"),
                               ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              ElevatedButton(
+                                  onPressed: () async {
+                                    // punch custom item to receipt
+                                    final good =
+                                        customKey.currentState!.validate();
+                                    if (good) {
+                                      if (service) {
+                                        TransactionItem item = TransactionItem(
+                                            itemName: customNameController.text,
+                                            price: (double.parse(
+                                                    toNumericString(
+                                                        customPriceController
+                                                            .text)) /
+                                                100),
+                                            service: service);
+                                        items.add(item);
+                                        print(items.length);
+                                        print(item.getService());
+                                        clearCustomForm();
+                                      } else {
+                                        TransactionItem item = TransactionItem(
+                                            itemName: customNameController.text,
+                                            price: (double.parse(
+                                                    toNumericString(
+                                                        customPriceController
+                                                            .text)) /
+                                                100),
+                                            service: service,
+                                            numOfItems: int.parse(
+                                                customNumberController.text));
+                                        items.add(item);
+                                        print(items.length);
+                                        print(item.getItem());
+                                        clearCustomForm();
+                                      }
+                                    }
+                                  },
+                                  child: Text("Punch Item to Receipt"))
                             ],
                           ),
                         )
@@ -234,11 +288,52 @@ class _NewTransactionState extends State<NewTransaction> {
             ),
           );
 
-          return wid;
+          Widget widbuilder = ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              final snapshot = items[index];
+              Widget widget;
+              if (snapshot.ifService()) {
+                Map<String, dynamic> itemMap = snapshot.getService();
+                widget = CardTemplate(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Service: ${itemMap["item_name"]}",
+                      style: GoogleFonts.montserrat(
+                          fontWeight: FontWeight.w500, fontSize: 16),
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.attach_money),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          "${NumberFormat.currency(symbol: '').format(itemMap["price"])}",
+                        ),
+                      ],
+                    )
+                  ],
+                ));
+              } else {
+                Map<String, dynamic> itemMap = snapshot.getItem();
+                widget = CardTemplate(child: Container());
+              }
+              return widget;
+            },
+          );
+
+          return Column(
+            children: [widbuilder, wid],
+          );
         },
       ),
     );
-    items.add(addWidget);
+    mainColumn.add(addWidget);
 
     return Container(
       color: CupertinoColors.extraLightBackgroundGray,
@@ -246,10 +341,10 @@ class _NewTransactionState extends State<NewTransaction> {
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: items[index],
+              child: mainColumn[index],
             );
           },
-          itemCount: items.length),
+          itemCount: mainColumn.length),
     );
   }
 }

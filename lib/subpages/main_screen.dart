@@ -335,13 +335,22 @@ class _ClientContentState extends State<ClientContent> {
 
   void changePage(page) {
     if (teamData["root-user"] == userData["email"]) {
-      setState(() {
+      if (currentPage == page) {
+
+      } else {
+setState(() {
         currentPage = page;
       });
+      }
+      
     } else if (userData[page]) {
-      setState(() {
+      if (currentPage == page) {
+
+      } else {
+setState(() {
         currentPage = page;
       });
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("You do you have permission to view $page")));
