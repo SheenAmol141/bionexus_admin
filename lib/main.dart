@@ -48,7 +48,6 @@ class _MyAppState extends State<MyApp> {
               fontFamily: "montserrat",
               fontWeight: FontWeight.bold),
         ),
-        iconTheme: IconThemeData(color: Colors.white),
         colorScheme: ThemeData().colorScheme.copyWith(primary: AERO),
         backgroundColor: EMERALD,
         elevatedButtonTheme: ElevatedButtonThemeData(

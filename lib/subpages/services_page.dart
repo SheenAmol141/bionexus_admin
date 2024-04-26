@@ -170,7 +170,7 @@ class AddInventoryItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextEditingController _price = TextEditingController();
-    TextEditingController _initialStock = TextEditingController();
+    TextEditingController _description = TextEditingController();
     TextEditingController _itemName = TextEditingController();
     final key = GlobalKey<FormState>();
     return Scaffold(
@@ -202,7 +202,7 @@ class AddInventoryItem extends StatelessWidget {
               ),
               TextFormField(
                 keyboardType: TextInputType.multiline,
-                controller: _initialStock,
+                controller: _description,
                 decoration: InputDecoration(labelText: "Description"),
                 maxLines: null,
                 autocorrect: true,
@@ -241,7 +241,7 @@ class AddInventoryItem extends StatelessWidget {
                           .doc("${_itemName.text}")
                           .set({
                         "item_name": _itemName.text,
-                        "description": _initialStock.text,
+                        "description": _description.text,
                         "price":
                             (double.parse(toNumericString(_price.text)) / 100)
                       }).then((value) {

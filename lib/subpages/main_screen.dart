@@ -336,20 +336,17 @@ class _ClientContentState extends State<ClientContent> {
   void changePage(page) {
     if (teamData["root-user"] == userData["email"]) {
       if (currentPage == page) {
-
       } else {
-setState(() {
-        currentPage = page;
-      });
+        setState(() {
+          currentPage = page;
+        });
       }
-      
     } else if (userData[page]) {
       if (currentPage == page) {
-
       } else {
-setState(() {
-        currentPage = page;
-      });
+        setState(() {
+          currentPage = page;
+        });
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -554,7 +551,7 @@ setState(() {
                             : currentPage == "Inventory"
                                 ? InventoryPage()
                                 : currentPage == "TPS"
-                                    ? TPS()
+                                    ? TPS(teamCode: userData["team-license"])
                                     : currentPage == "Medical Services"
                                         ? MedicalServicesPage()
                                         : Container(

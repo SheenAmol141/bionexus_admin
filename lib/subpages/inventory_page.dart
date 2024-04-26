@@ -132,17 +132,14 @@ class _InventoryPageState extends State<InventoryPage> {
                                         size: 30,
                                       ),
                                       const SizedBox(
-                                        width: 20,
+                                        width: 5,
                                       ),
                                       Text("${items[index]["stock"]}")
                                     ]),
                                     Row(children: [
                                       const Icon(
-                                        Icons.price_change,
+                                        Icons.attach_money,
                                         size: 30,
-                                      ),
-                                      const SizedBox(
-                                        width: 20,
                                       ),
                                       Text(NumberFormat.currency(symbol: '')
                                           .format(items[index]["price"]))

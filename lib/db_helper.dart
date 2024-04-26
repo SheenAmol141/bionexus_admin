@@ -168,12 +168,14 @@ Future<String> getTeam() async {
 class TransactionItem {
   String itemName;
   int? numOfItems;
+  String? description;
   double price;
   bool service;
 
   TransactionItem(
       {required this.itemName,
       this.numOfItems,
+      this.description,
       required this.price,
       required this.service});
 
@@ -184,6 +186,7 @@ class TransactionItem {
   getService() {
     return {
       "item_name": itemName,
+      "description": description,
       "price": price,
     };
   }

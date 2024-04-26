@@ -1,8 +1,12 @@
 // ignore_for_file: avoid_unnecessary_containers, prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'dart:js_interop';
+
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/hex_color.dart';
 import 'package:bionexus_admin/templates.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,9 +14,11 @@ import 'package:flutter_multi_formatter/formatters/formatter_utils.dart';
 import 'package:flutter_multi_formatter/formatters/money_input_formatter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:async/async.dart';
 
 class TPS extends StatelessWidget {
-  const TPS({super.key});
+  TPS({super.key, required this.teamCode});
+  String teamCode;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +63,7 @@ class TPS extends StatelessWidget {
             backgroundColor: EMERALD,
           ),
           body: TabBarView(children: [
-            NewTransaction(),
+            NewTransaction(teamCode: teamCode),
             Container(color: CupertinoColors.lightBackgroundGray)
           ]),
         ));
@@ -66,15 +72,51 @@ class TPS extends StatelessWidget {
 
 //NEW TRANSACTION ---------------------------------------------------------------------------------
 class NewTransaction extends StatefulWidget {
-  const NewTransaction({
+  NewTransaction({
     super.key,
+    required this.teamCode,
   });
+  String teamCode;
 
   @override
   State<NewTransaction> createState() => _NewTransactionState();
 }
 
 class _NewTransactionState extends State<NewTransaction> {
+  String currentServicesSelected = 'loading';
+  String currentItemSelected = 'loading';
+  void getfirstService() {
+    FirebaseFirestore.instance
+        .collection("Teams")
+        .doc(widget.teamCode)
+        .collection("Medical Services")
+        .get()
+        .then((value) {
+      currentServicesSelected = value.docs.reversed.first["item_name"];
+    });
+  }
+
+  void getfirstItem() {
+    FirebaseFirestore.instance
+        .collection("Teams")
+        .doc(widget.teamCode)
+        .collection("Inventory")
+        .get()
+        .then((value) {
+      currentItemSelected = value.docs.reversed.first["item_name"];
+    });
+  }
+
+  // getMedServices ============================
+  bool loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getfirstService();
+    getfirstItem();
+  }
+
   List<Widget> mainColumn = [
     Container(
       height: 20,
@@ -95,6 +137,8 @@ class _NewTransactionState extends State<NewTransaction> {
           TextEditingController customPriceController = TextEditingController();
           TextEditingController customNumberController =
               TextEditingController();
+          TextEditingController customDescriptionController =
+              TextEditingController();
 
           void clearCustomForm() {
             setStateHere(
@@ -106,7 +150,7 @@ class _NewTransactionState extends State<NewTransaction> {
 
           Widget wid = CardTemplate(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SegmentedButton(
                     style: ButtonStyle(backgroundColor:
@@ -142,12 +186,14 @@ class _NewTransactionState extends State<NewTransaction> {
                     },
                     segments: [
                       ButtonSegment(value: "custom", label: Text("Custom")),
-                      ButtonSegment(value: "service", label: Text("Service")),
+                      ButtonSegment(
+                          value: "service", label: Text("Medical Service")),
                       ButtonSegment(value: "item", label: Text("Item"))
                     ],
                     selected: currentSelected),
                 Container(
-                  child: currentSelected.first == "custom"
+                  child: currentSelected.first ==
+                          "custom" //current segmented is custom
                       ? Form(
                           key: customKey,
                           child: Column(
@@ -157,7 +203,7 @@ class _NewTransactionState extends State<NewTransaction> {
                                 height: 30,
                               ),
                               Text(
-                                "Add a Custom Item/Service",
+                                "Add a Custom Medical Service/Item",
                                 style: GoogleFonts.montserrat(
                                     fontWeight: FontWeight.w500),
                               ),
@@ -178,15 +224,16 @@ class _NewTransactionState extends State<NewTransaction> {
                                   SizedBox(
                                     width: 10,
                                   ),
-                                  Text("Is this a Service?")
+                                  Text("Is this a Medical Service?")
                                 ],
                               ),
                               SizedBox(
                                 height: 20,
                               ),
                               TextFormField(
-                                decoration:
-                                    InputDecoration(labelText: "Item Name"),
+                                decoration: InputDecoration(
+                                    labelText:
+                                        "${service ? "Medical Service Label" : "Item Name"}"),
                                 controller: customNameController,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
@@ -213,14 +260,20 @@ class _NewTransactionState extends State<NewTransaction> {
                                             ? "Should not be empty"
                                             : null,
                                       )
-                                    : null,
+                                    : TextFormField(
+                                        keyboardType: TextInputType.multiline,
+                                        controller: customDescriptionController,
+                                        decoration: InputDecoration(
+                                            labelText: "Description"),
+                                        maxLines: null,
+                                        autocorrect: true,
+                                        validator: (value) => value == ''
+                                            ? "Should not be empty"
+                                            : null,
+                                      ),
                               ),
-                              Container(
-                                child: !service
-                                    ? SizedBox(
-                                        height: 20,
-                                      )
-                                    : null,
+                              SizedBox(
+                                height: 20,
                               ),
                               TextFormField(
                                 validator: (value) =>
@@ -255,6 +308,9 @@ class _NewTransactionState extends State<NewTransaction> {
                                                         customPriceController
                                                             .text)) /
                                                 100),
+                                            description:
+                                                customDescriptionController
+                                                    .text,
                                             service: service);
                                         items.add(item);
                                         print(items.length);
@@ -278,16 +334,296 @@ class _NewTransactionState extends State<NewTransaction> {
                                       }
                                     }
                                   },
-                                  child: Text("Punch Item to Receipt"))
+                                  child: Text("Punch to Receipt"))
                             ],
                           ),
-                        )
-                      : Container(),
+                        ) //END OF CUSTOM --------------------------------------------------------------------------------------------------------------
+                      : currentSelected.first ==
+                              "service" //current segmented is MED SERVICES
+                          ? StreamBuilder(
+                              stream: FirebaseFirestore.instance
+                                  .collection("Teams")
+                                  .doc(widget.teamCode)
+                                  .collection("Medical Services")
+                                  .snapshots(),
+                              builder: (context, snapshot) {
+                                // MEDICAL SERVICES TEMPLATE MENU
+
+                                List<TransactionItem> _serviceSnapshotList = [];
+                                if (snapshot.hasData) {
+                                  try {
+                                    for (var doc in snapshot.data!.docs.reversed
+                                        .toList()) {
+                                      _serviceSnapshotList.add(
+                                        TransactionItem(
+                                          itemName: doc["item_name"],
+                                          price: doc["price"],
+                                          service: true,
+                                          description: doc["description"],
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    _serviceSnapshotList = [
+                                      TransactionItem(
+                                          itemName: "loading",
+                                          price: 0,
+                                          service: true,
+                                          description: "loading")
+                                    ];
+                                  }
+                                }
+
+                                try {
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      SizedBox(
+                                        height: 20,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width -
+                                                90,
+                                            padding: EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    style: BorderStyle.solid,
+                                                    width: 1,
+                                                    color: Colors.black
+                                                        .withOpacity(0.5)),
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(5))),
+                                            child: Center(
+                                              child: DropdownButton(
+                                                underline: Container(),
+                                                iconEnabledColor: Colors.black
+                                                    .withOpacity(0.5),
+                                                value:
+                                                    currentServicesSelected, // --------------------------------------------------
+                                                items: _serviceSnapshotList
+                                                    .map((e) {
+                                                  return DropdownMenuItem(
+                                                      value: e.getService()[
+                                                          "item_name"],
+                                                      child: Container(
+                                                        width: MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .width -
+                                                            150,
+                                                        child: Text(
+                                                          e.getService()[
+                                                              "item_name"],
+                                                          style: GoogleFonts
+                                                              .montserrat(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                          ),
+                                                        ),
+                                                      ));
+                                                }).toList(),
+                                                onChanged: (value) {
+                                                  print(value);
+                                                  setStateHere(
+                                                    () {
+                                                      currentServicesSelected =
+                                                          value.toString();
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: 20,
+                                      ),
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            print(_serviceSnapshotList);
+                                            for (TransactionItem _itemService
+                                                in _serviceSnapshotList) {
+                                              if (_itemService.getService()[
+                                                      "item_name"] ==
+                                                  currentServicesSelected) {
+                                                items.add(_itemService);
+                                                setStateHere(
+                                                  () {},
+                                                );
+                                                print("LETSGO");
+                                              }
+                                            }
+                                          },
+                                          child: Text("Punch to Receipt"))
+                                    ],
+                                  );
+                                } catch (e) {
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      color: AERO,
+                                    ),
+                                  );
+                                }
+                              },
+                            )
+                          : currentSelected.first == "item"
+                              ? StreamBuilder(
+                                  // current segmented is ITEM ---------------------------
+                                  stream: FirebaseFirestore.instance
+                                      .collection("Teams")
+                                      .doc(widget.teamCode)
+                                      .collection("Inventory")
+                                      .snapshots(),
+                                  builder: (context, snapshot) {
+                                    // ITEM TEMPLATE MENU
+
+                                    List<TransactionItem> _itemSnapshotList =
+                                        [];
+                                    if (snapshot.hasData) {
+                                      try {
+                                        for (var doc in snapshot
+                                            .data!.docs.reversed
+                                            .toList()) {
+                                          _itemSnapshotList.add(
+                                            TransactionItem(
+                                              itemName: doc["item_name"],
+                                              price: doc["price"],
+                                              service: false,
+                                              numOfItems: doc["stock"],
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        _itemSnapshotList = [
+                                          TransactionItem(
+                                              itemName: "loading",
+                                              price: 0,
+                                              service: true,
+                                              description: "loading")
+                                        ];
+                                      }
+                                      print(_itemSnapshotList);
+                                    }
+
+                                    try {
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          SizedBox(
+                                            height: 20,
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width -
+                                                    90,
+                                                padding: EdgeInsets.all(5),
+                                                decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                        style:
+                                                            BorderStyle.solid,
+                                                        width: 1,
+                                                        color: Colors.black
+                                                            .withOpacity(0.5)),
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                            Radius.circular(
+                                                                5))),
+                                                child: Center(
+                                                  child: DropdownButton(
+                                                    underline: Container(),
+                                                    iconEnabledColor: Colors
+                                                        .black
+                                                        .withOpacity(0.5),
+                                                    value: currentItemSelected,
+                                                    items: _itemSnapshotList
+                                                        .map((e) {
+                                                      return DropdownMenuItem(
+                                                          value: e.getItem()[
+                                                              "item_name"],
+                                                          child: Container(
+                                                            width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width -
+                                                                150,
+                                                            child: Text(
+                                                              e.getItem()[
+                                                                  "item_name"],
+                                                              style: GoogleFonts
+                                                                  .montserrat(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                              ),
+                                                            ),
+                                                          ));
+                                                    }).toList(),
+                                                    onChanged: (value) {
+                                                      print(value);
+                                                      setStateHere(
+                                                        () {
+                                                          currentItemSelected =
+                                                              value.toString();
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            height: 20,
+                                          ),
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                print(_itemSnapshotList);
+                                                for (TransactionItem _itemItem
+                                                    in _itemSnapshotList) {
+                                                  if (_itemItem.getItem()[
+                                                          "item_name"] ==
+                                                      currentItemSelected) {
+                                                    items.add(_itemItem);
+                                                    setStateHere(
+                                                      () {},
+                                                    );
+                                                    print("LETSGO");
+                                                  }
+                                                }
+                                              },
+                                              child: Text("Punch to Receipt"))
+                                        ],
+                                      );
+                                    } catch (e) {
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          color: AERO,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                )
+                              : null,
                 )
               ],
             ),
           );
 
+          //BUILD THE ITEMS
           Widget widbuilder = ListView.builder(
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
@@ -301,50 +637,159 @@ class _NewTransactionState extends State<NewTransaction> {
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Service: ${itemMap["item_name"]}",
-                      style: GoogleFonts.montserrat(
-                          fontWeight: FontWeight.w500, fontSize: 16),
-                    ),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(Icons.attach_money),
-                        SizedBox(
-                          width: 10,
-                        ),
                         Text(
-                          "${NumberFormat.currency(symbol: '').format(itemMap["price"])}",
+                          "Medical Service: ${itemMap["item_name"]}",
+                          style: GoogleFonts.montserrat(
+                              fontWeight: FontWeight.w600, fontSize: 16),
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.attach_money,
+                              size: 20,
+                            ),
+                            Text(
+                              NumberFormat.currency(symbol: '')
+                                  .format(itemMap["price"]),
+                            ),
+                          ],
                         ),
                       ],
-                    )
+                    ),
+                    Text("${itemMap["description"]}"),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                            style: ButtonStyle(
+                                backgroundColor: MaterialStatePropertyAll(
+                                    const Color.fromARGB(255, 255, 60, 57)),
+                                padding: MaterialStatePropertyAll(
+                                    EdgeInsets.all(2))),
+                            onPressed: () {
+                              items.removeAt(index);
+                              print(items);
+                              setStateHere(
+                                () {},
+                              );
+                            },
+                            child: Icon(Icons.close_rounded))
+                      ],
+                    ),
                   ],
                 ));
               } else {
                 Map<String, dynamic> itemMap = snapshot.getItem();
-                widget = CardTemplate(child: Container());
+                widget = CardTemplate(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Item: ${itemMap["item_name"]}",
+                          style: GoogleFonts.montserrat(
+                              fontWeight: FontWeight.w600, fontSize: 16),
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.attach_money,
+                              size: 20,
+                            ),
+                            Text(
+                              NumberFormat.currency(symbol: '').format(
+                                  itemMap["price"] *
+                                      itemMap["number_of_items"]),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text("${itemMap["number_of_items"]} pc/s"),
+                        Text("  x "),
+                        Icon(
+                          Icons.attach_money,
+                          size: 16,
+                        ),
+                        Text(
+                          NumberFormat.currency(symbol: '')
+                                  .format(itemMap["price"]) +
+                              " per pc",
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                            style: ButtonStyle(
+                                backgroundColor: MaterialStatePropertyAll(
+                                    const Color.fromARGB(255, 255, 60, 57)),
+                                padding: MaterialStatePropertyAll(
+                                    EdgeInsets.all(2))),
+                            onPressed: () {
+                              items.removeAt(index);
+                              print(items);
+                              setStateHere(
+                                () {},
+                              );
+                            },
+                            child: Icon(Icons.close_rounded))
+                      ],
+                    )
+                  ],
+                ));
               }
               return widget;
             },
           );
-
+          List<Widget> widgetlists = [widbuilder];
+          widgetlists.add(wid);
           return Column(
-            children: [widbuilder, wid],
+            children: widgetlists,
           );
+//           ListView.builder(
+//   itemCount: [widbuilder, wid].length,
+//   itemBuilder: (_, i) => [widbuilder, wid][i],
+// );
         },
       ),
     );
+
+    // ADD CARD DONE -------------------------------------------------
+
+    // SHOW FULL RECEIPT ========================================================
+
+    // SHOW FULL RECEIPT ========================================================
+
     mainColumn.add(addWidget);
 
+    // return Container(
+    //   color: CupertinoColors.extraLightBackgroundGray,
+    //   child: ListView.builder(
+    //       itemBuilder: (context, index) {
+    //         return Padding(
+    //           padding: const EdgeInsets.symmetric(horizontal: 20),
+    //           child: mainColumn[index],
+    //         );
+    //       },
+    //       itemCount: mainColumn.length),
+
     return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20),
       color: CupertinoColors.extraLightBackgroundGray,
-      child: ListView.builder(
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: mainColumn[index],
-            );
-          },
-          itemCount: mainColumn.length),
+      child: SingleChildScrollView(
+        child: Column(
+          children: mainColumn,
+        ),
+      ),
     );
   }
 }
