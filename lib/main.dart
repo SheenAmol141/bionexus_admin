@@ -68,7 +68,12 @@ class _MyAppState extends State<MyApp> {
         ),
         fontFamily: "montserrat",
         primaryColor: PROCESS_CYAN,
+        radioTheme: RadioThemeData(
+          fillColor: MaterialStatePropertyAll(AERO),
+        ),
         inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: AERO, width: 3.0),
             borderRadius: BorderRadius.circular(8.0),

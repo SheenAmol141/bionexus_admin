@@ -2,6 +2,7 @@
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/add_team.dart';
 import 'package:bionexus_admin/subpages/inventory_page.dart';
+import 'package:bionexus_admin/subpages/patient_records/patient_records_page.dart';
 import 'package:bionexus_admin/subpages/patients_queue_page.dart';
 import 'package:bionexus_admin/subpages/services_page.dart';
 import 'package:bionexus_admin/subpages/settings_page.dart';
@@ -552,18 +553,22 @@ class _ClientContentState extends State<ClientContent> {
                                 ? InventoryPage()
                                 : currentPage == "TPS"
                                     ? TPS(teamCode: userData["team-license"])
-                                    : currentPage == "Medical Services"
-                                        ? MedicalServicesPage()
-                                        : Container(
-                                            child: Center(
-                                              child: Text("WIP"),
-                                            ),
-                                          ))
-            : Center(
-                child: Scaffold(
-                body: CircularProgressIndicator(
-                  color: AERO,
+                                    : currentPage == "Patient Records"
+                                        ? PatientRecordsPage(
+                                            teamCode: userData["team-license"])
+                                        : currentPage == "Medical Services"
+                                            ? MedicalServicesPage()
+                                            : Container(
+                                                child: Center(
+                                                  child: Text("WIP"),
+                                                ),
+                                              ))
+            : Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(
+                    color: AERO,
+                  ),
                 ),
-              ));
+              );
   }
 }

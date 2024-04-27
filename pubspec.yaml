@@ -46,6 +46,7 @@ dependencies:
   google_fonts: ^6.2.1
   flutter_multi_formatter: ^2.12.8
   intl: ^0.18.1
+  timeago_flutter: ^3.6.0
 
 dev_dependencies:
   flutter_test:

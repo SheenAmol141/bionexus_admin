@@ -111,7 +111,10 @@ class _InventoryPageState extends State<InventoryPage> {
                       }
                       return Padding(
                         padding: const EdgeInsets.all(20.0),
-                        child: ListView.builder(
+                        child: ListView.separated(
+                          separatorBuilder: (context, index) => SizedBox(
+                            height: 20,
+                          ),
                           itemCount: items.length,
                           itemBuilder: (context, index) {
                             return CardTemplate(
@@ -182,6 +185,7 @@ class AddServicesItem extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextFormField(
                 controller: _itemName,

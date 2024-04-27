@@ -21,18 +21,15 @@ class CardTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Card(
-          surfaceTintColor: Colors.transparent,
-          color: Colors.white,
-          elevation: 5,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            child: child,
-          )),
-    );
+    return Card(
+        surfaceTintColor: Colors.transparent,
+        color: Colors.white,
+        elevation: 5,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          child: child,
+        ));
   }
 }
 

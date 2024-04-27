@@ -111,7 +111,10 @@ class _MedicalServicesPageState extends State<MedicalServicesPage> {
                       }
                       return Padding(
                         padding: const EdgeInsets.all(20.0),
-                        child: ListView.builder(
+                        child: ListView.separated(
+                          separatorBuilder: (context, index) => SizedBox(
+                            height: 20,
+                          ),
                           itemCount: items.length,
                           itemBuilder: (context, index) {
                             return CardTemplate(
@@ -176,7 +179,7 @@ class AddInventoryItem extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text("Add a Service",
+        title: Text("Add a Medical Service",
             style: GoogleFonts.montserrat(
                 fontWeight: FontWeight.w600, color: Colors.white)),
         iconTheme: IconThemeData(color: Colors.white),
@@ -187,10 +190,11 @@ class AddInventoryItem extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextFormField(
                 controller: _itemName,
-                decoration: InputDecoration(labelText: "Item Name"),
+                decoration: InputDecoration(labelText: "Medical Service Name"),
                 validator: (value) => value == ''
                     ? "Should not be empty"
                     : value!.length < 3

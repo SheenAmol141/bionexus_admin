@@ -5,6 +5,7 @@ import 'package:bionexus_admin/subpages/main_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 Future<bool> doesAdminExist(String email) async {
   try {
@@ -197,5 +198,26 @@ class TransactionItem {
       "price": price,
       "number_of_items": numOfItems
     };
+  }
+}
+
+class Birthdate {
+  final DateTime _birthDate;
+
+  Birthdate(this._birthDate);
+
+  String getFormattedDate() {
+    return DateFormat('MMMM-dd-yyyy').format(_birthDate);
+  }
+
+  int getCurrentAge() {
+    final now = DateTime.now();
+    int age = now.year - _birthDate.year;
+    // Check if birthday has passed in the current year
+    if ((now.month < _birthDate.month) ||
+        (now.month == _birthDate.month && now.day < _birthDate.day)) {
+      age--;
+    }
+    return age;
   }
 }
