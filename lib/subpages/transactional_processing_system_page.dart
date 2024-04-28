@@ -92,7 +92,9 @@ class _NewTransactionState extends State<NewTransaction> {
         .collection("Medical Services")
         .get()
         .then((value) {
-      currentServicesSelected = value.docs.reversed.first["item_name"];
+      if (value.docs.isNotEmpty) {
+        currentItemSelected = value.docs.reversed.first["item_name"];
+      }
     });
   }
 
@@ -103,7 +105,9 @@ class _NewTransactionState extends State<NewTransaction> {
         .collection("Inventory")
         .get()
         .then((value) {
-      currentItemSelected = value.docs.reversed.first["item_name"];
+      if (value.docs.isNotEmpty) {
+        currentItemSelected = value.docs.reversed.first["item_name"];
+      }
     });
   }
 
@@ -126,13 +130,18 @@ class _NewTransactionState extends State<NewTransaction> {
   Set<String> currentSelected = {"custom"};
   bool service = false;
 
+  bool usePatient = true;
+
   @override
   Widget build(BuildContext context) {
     final customKey = GlobalKey<FormState>();
+    final itemKey = GlobalKey<FormState>();
 
     Container addWidget = Container(
       child: StatefulBuilder(
         builder: (context, setStateHere) {
+          String patientcurrentselected = '';
+          TextEditingController numOfItems = TextEditingController();
           TextEditingController customNameController = TextEditingController();
           TextEditingController customPriceController = TextEditingController();
           TextEditingController customNumberController =
@@ -148,7 +157,8 @@ class _NewTransactionState extends State<NewTransaction> {
             );
           }
 
-          Widget wid = CardTemplate(
+          void initpatientcurrent() {}
+          Widget punchWidget = CardTemplate(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -325,7 +335,7 @@ class _NewTransactionState extends State<NewTransaction> {
                                                             .text)) /
                                                 100),
                                             service: service,
-                                            numOfItems: int.parse(
+                                            numBuying: int.parse(
                                                 customNumberController.text));
                                         items.add(item);
                                         print(items.length);
@@ -402,6 +412,7 @@ class _NewTransactionState extends State<NewTransaction> {
                                                     Radius.circular(5))),
                                             child: Center(
                                               child: DropdownButton(
+                                                isExpanded: true,
                                                 underline: Container(),
                                                 iconEnabledColor: Colors.black
                                                     .withOpacity(0.5),
@@ -542,46 +553,67 @@ class _NewTransactionState extends State<NewTransaction> {
                                                         BorderRadius.all(
                                                             Radius.circular(
                                                                 5))),
-                                                child: Center(
-                                                  child: DropdownButton(
-                                                    underline: Container(),
-                                                    iconEnabledColor: Colors
-                                                        .black
-                                                        .withOpacity(0.5),
-                                                    value: currentItemSelected,
-                                                    items: _itemSnapshotList
-                                                        .map((e) {
-                                                      return DropdownMenuItem(
-                                                          value: e.getItem()[
-                                                              "item_name"],
-                                                          child: Container(
-                                                            width: MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .width -
-                                                                150,
-                                                            child: Text(
-                                                              e.getItem()[
+                                                child: Column(
+                                                  children: [
+                                                    Center(
+                                                      child: DropdownButton(
+                                                        isExpanded: true,
+                                                        underline: Container(),
+                                                        iconEnabledColor: Colors
+                                                            .black
+                                                            .withOpacity(0.5),
+                                                        value:
+                                                            currentItemSelected,
+                                                        items: _itemSnapshotList
+                                                            .map((e) {
+                                                          return DropdownMenuItem(
+                                                              value: e.getItem()[
                                                                   "item_name"],
-                                                              style: GoogleFonts
-                                                                  .montserrat(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w400,
-                                                              ),
-                                                            ),
-                                                          ));
-                                                    }).toList(),
-                                                    onChanged: (value) {
-                                                      print(value);
-                                                      setStateHere(
-                                                        () {
-                                                          currentItemSelected =
-                                                              value.toString();
+                                                              child: Container(
+                                                                width: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width -
+                                                                    150,
+                                                                child: Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
+                                                                  children: [
+                                                                    Text(
+                                                                      e.getItem()[
+                                                                          "item_name"],
+                                                                      style: GoogleFonts
+                                                                          .montserrat(
+                                                                        fontWeight:
+                                                                            FontWeight.w400,
+                                                                      ),
+                                                                    ),
+                                                                    Text(
+                                                                      "Stock: ${e.getItem()["number_of_items"]}",
+                                                                      style: GoogleFonts
+                                                                          .montserrat(
+                                                                        fontWeight:
+                                                                            FontWeight.w400,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ));
+                                                        }).toList(),
+                                                        onChanged: (value) {
+                                                          print(value);
+                                                          setStateHere(
+                                                            () {
+                                                              currentItemSelected =
+                                                                  value
+                                                                      .toString();
+                                                            },
+                                                          );
                                                         },
-                                                      );
-                                                    },
-                                                  ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ],
@@ -589,19 +621,59 @@ class _NewTransactionState extends State<NewTransaction> {
                                           SizedBox(
                                             height: 20,
                                           ),
+                                          Form(
+                                            key: itemKey,
+                                            child: TextFormField(
+                                              decoration: InputDecoration(
+                                                  label: Text("Amount to buy")),
+                                              inputFormatters: [
+                                                FilteringTextInputFormatter
+                                                    .digitsOnly
+                                              ],
+                                              controller: numOfItems,
+                                              validator: (value) {
+                                                if (value == '' ||
+                                                    value == null) {
+                                                  return "Amount should not be empty";
+                                                } else {
+                                                  for (TransactionItem _item
+                                                      in _itemSnapshotList) {
+                                                    if (_item.getItem()[
+                                                            "item_name"] ==
+                                                        currentItemSelected) {
+                                                      if (_item.getItem()[
+                                                              "number_of_items"] <
+                                                          int.parse(numOfItems
+                                                              .text)) {
+                                                        return "Amount should be less than stock!";
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 20,
+                                          ),
                                           ElevatedButton(
                                               onPressed: () {
-                                                print(_itemSnapshotList);
                                                 for (TransactionItem _itemItem
                                                     in _itemSnapshotList) {
-                                                  if (_itemItem.getItem()[
-                                                          "item_name"] ==
-                                                      currentItemSelected) {
-                                                    items.add(_itemItem);
-                                                    setStateHere(
-                                                      () {},
-                                                    );
-                                                    print("LETSGO");
+                                                  if (itemKey.currentState!
+                                                      .validate()) {
+                                                    if (_itemItem.getItem()[
+                                                            "item_name"] ==
+                                                        currentItemSelected) {
+                                                      _itemItem.setNumBuying(
+                                                          int.parse(
+                                                              numOfItems.text));
+                                                      items.add(_itemItem);
+                                                      setStateHere(
+                                                        () {},
+                                                      );
+                                                      print("LETSGO");
+                                                    }
                                                   }
                                                 }
                                               },
@@ -624,7 +696,12 @@ class _NewTransactionState extends State<NewTransaction> {
           );
 
           //BUILD THE ITEMS
-          Widget widbuilder = ListView.builder(
+          Widget widbuilder = ListView.separated(
+            separatorBuilder: (context, index) {
+              return SizedBox(
+                height: 20,
+              );
+            },
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: items.length,
@@ -702,9 +779,8 @@ class _NewTransactionState extends State<NewTransaction> {
                               size: 20,
                             ),
                             Text(
-                              NumberFormat.currency(symbol: '').format(
-                                  itemMap["price"] *
-                                      itemMap["number_of_items"]),
+                              NumberFormat.currency(symbol: '')
+                                  .format(itemMap["price"] * itemMap["buyNum"]),
                             ),
                           ],
                         ),
@@ -712,7 +788,7 @@ class _NewTransactionState extends State<NewTransaction> {
                     ),
                     Row(
                       children: [
-                        Text("${itemMap["number_of_items"]} pc/s"),
+                        Text("${itemMap["buyNum"]} pc/s"),
                         Text("  x "),
                         Icon(
                           Icons.attach_money,
@@ -736,12 +812,11 @@ class _NewTransactionState extends State<NewTransaction> {
                                     EdgeInsets.all(2))),
                             onPressed: () {
                               items.removeAt(index);
-                              print(items);
                               setStateHere(
                                 () {},
                               );
                             },
-                            child: Icon(Icons.close_rounded))
+                            child: Icon(Icons.close_rounded)),
                       ],
                     )
                   ],
@@ -750,15 +825,202 @@ class _NewTransactionState extends State<NewTransaction> {
               return widget;
             },
           );
-          List<Widget> widgetlists = [widbuilder];
-          widgetlists.add(wid);
+
+          ElevatedButton confirmReceipt = ElevatedButton(
+            style: ButtonStyle(
+                backgroundColor: MaterialStatePropertyAll(EMERALD),
+                padding: MaterialStatePropertyAll(EdgeInsets.all(30))),
+            onPressed: () {
+              if (items.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("The transaction is empty!")));
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    actions: [
+                      TextButton(
+                          style: ButtonStyle(
+                              textStyle: MaterialStatePropertyAll(
+                                  GoogleFonts.montserrat(
+                                      fontWeight: FontWeight.w400))),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text("Cancel")),
+                      TextButton(
+                        onPressed: () {
+                          CollectionReference transactionMain =
+                              FirebaseFirestore.instance
+                                  .collection("Teams")
+                                  .doc(widget.teamCode)
+                                  .collection("Transactions");
+                          CollectionReference transactionPatient =
+                              FirebaseFirestore.instance
+                                  .collection("Teams")
+                                  .doc(widget.teamCode)
+                                  .collection("Patients");
+                          for (TransactionItem item in items) {}
+                        },
+                        style: ButtonStyle(
+                            textStyle: MaterialStatePropertyAll(
+                                GoogleFonts.montserrat(
+                                    fontWeight: FontWeight.w600))),
+                        child: Text("Confirm"),
+                      )
+                    ],
+                    contentPadding: EdgeInsets.all(20),
+                    content: Text(
+                        "Do you wish to confirm and upload this transaction?"),
+                    title: Text(
+                      "Confirm Receipt",
+                      style: GoogleFonts.montserrat(
+                          fontSize: 17, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                );
+              }
+            },
+            child: Text("Confirm Receipt"),
+          );
+          bool inputpatient = false;
+
+          final selectPatientKey = GlobalKey<FormState>();
+          TextEditingController selectPatientController =
+              TextEditingController();
+          CardTemplate selectPatientForTransaction = CardTemplate(
+              child: Container(
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection("Teams")
+                  .doc(widget.teamCode)
+                  .collection("Patients")
+                  .snapshots(),
+              builder: (context, snapshot) {
+                Widget walkinpatient = Form(
+                  key: selectPatientKey,
+                  child: TextFormField(
+                    decoration: InputDecoration(label: Text("Name")),
+                    controller: selectPatientController,
+                    validator: (value) {
+                      if (value == null || value == "") {
+                        return "Name must not be empty!";
+                      } else if (value!.length < 3) {
+                        return "Name must be more than 3 characters!";
+                      }
+                    },
+                  ),
+                );
+
+                List<DocumentSnapshot> _patients = [];
+
+                if (snapshot.hasData) {
+                  try {
+                    for (DocumentSnapshot doc
+                        in snapshot.data!.docs.reversed.toList()) {
+                      _patients.add(doc);
+                    }
+
+                    patientcurrentselected = _patients.first["name"];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SectionTitlesTemplate("Buyer Details"),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        Row(
+                          children: [
+                            Text("Use an Existing Patient?"),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Switch(
+                              value: usePatient,
+                              onChanged: (value) {
+                                setStateHere(
+                                  () {
+                                    usePatient = value;
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        usePatient
+                            ? StatefulBuilder(
+                                builder: (context, setStatepatient) {
+                                  return DropdownButton(
+                                    isExpanded: true,
+                                    onChanged: (value) {
+                                      setStatepatient(() {
+                                        patientcurrentselected =
+                                            value.toString();
+                                      });
+                                    },
+                                    value: patientcurrentselected,
+                                    items: _patients.map((e) {
+                                      return DropdownMenuItem(
+                                          value: e["name"],
+                                          child: Text(e["name"]));
+                                    }).toList(),
+                                  );
+                                },
+                              )
+                            : walkinpatient,
+                      ],
+                    );
+                  } catch (e) {
+                    usePatient = false;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SectionTitlesTemplate("Buyer Details"),
+                        SizedBox(height: 20),
+                        walkinpatient,
+                      ],
+                    );
+                  }
+                } else {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: AERO,
+                    ),
+                  );
+                }
+              },
+            ),
+          ));
+
+          List<Widget> widgetlists = [
+            SizedBox(
+              height: 20,
+            ),
+            selectPatientForTransaction,
+            SizedBox(
+              height: 20,
+            ),
+            widbuilder,
+            SizedBox(
+              height: 20,
+            ),
+            punchWidget,
+            SizedBox(
+              height: 20,
+            ),
+            confirmReceipt,
+            SizedBox(
+              height: 20,
+            )
+          ];
+
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: widgetlists,
           );
-//           ListView.builder(
-//   itemCount: [widbuilder, wid].length,
-//   itemBuilder: (_, i) => [widbuilder, wid][i],
-// );
         },
       ),
     );
@@ -767,29 +1029,21 @@ class _NewTransactionState extends State<NewTransaction> {
 
     // SHOW FULL RECEIPT ========================================================
 
-    // SHOW FULL RECEIPT ========================================================
-
     mainColumn.add(addWidget);
 
-    // return Container(
-    //   color: CupertinoColors.extraLightBackgroundGray,
-    //   child: ListView.builder(
-    //       itemBuilder: (context, index) {
-    //         return Padding(
-    //           padding: const EdgeInsets.symmetric(horizontal: 20),
-    //           child: mainColumn[index],
-    //         );
-    //       },
-    //       itemCount: mainColumn.length),
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      color: CupertinoColors.extraLightBackgroundGray,
-      child: SingleChildScrollView(
-        child: Column(
-          children: mainColumn,
+    try {
+      return SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: mainColumn,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      return Container(
+        child: Text("$e"),
+      );
+    }
   }
 }

@@ -358,21 +358,50 @@ class MoreAboutPage extends StatelessWidget {
 
     Birthdate bday = Birthdate(timestampToDateTime(docSnapshot["birthdate"]));
 
-    // StreamBuilder stream = StreamBuilder(
-    //     stream: FirebaseFirestore.instance
-    //         .collection("Teams")
-    //         .doc(teamCode)
-    //         .collection("Patients")
-    //         .doc(docSnapshot["name"])
-    //         .collection("Transactions")
-    //         .snapshots(),
-    //     builder: (context, snapshot) {
-    //       try {
-
-    //       }catch (e) {
-
-    //       }
-    //     },);
+    StreamBuilder stream = StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("Teams")
+          .doc(teamCode)
+          .collection("Patients")
+          .doc(docSnapshot["name"])
+          .collection("Transactions")
+          .snapshots(),
+      builder: (context, snapshot) {
+        try {
+          List<DocumentSnapshot> _transactions = [];
+          for (DocumentSnapshot doc in snapshot.data!.docs.reversed.toList()) {
+            _transactions.add(doc);
+          }
+          if (_transactions.length == 0) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Container(
+                child: const CardTemplate(child: Text("No Transactions")),
+              ),
+            );
+          } else {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: ListView.builder(
+                itemCount: _transactions.length,
+                itemBuilder: (context, index) {
+                  return CardTemplate(child: Column());
+                },
+              ),
+            );
+          }
+        } catch (e) {
+          return Scaffold(
+            backgroundColor: CupertinoColors.extraLightBackgroundGray,
+            body: Center(
+              child: CircularProgressIndicator(
+                color: AERO,
+              ),
+            ),
+          );
+        }
+      },
+    );
 
     return Scaffold(
       //return scaffold ----------------------------------
@@ -382,188 +411,191 @@ class MoreAboutPage extends StatelessWidget {
         title: Text("More about ${docSnapshot["name"]}"),
       ),
       backgroundColor: CupertinoColors.extraLightBackgroundGray,
-      body: Column(
-        children: [
-          SizedBox(
-            height: 20,
-          ),
-          SectionTitlesTemplate("Patient Profile"),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: CardTemplate(
-              child: Column(
-                children: [
-                  Text(
-                    "${docSnapshot["name"]}",
-                    style: GoogleFonts.montserrat(
-                        fontSize: 20, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  const Divider(),
-                  Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Sex:",
-                            style: GoogleFonts.montserrat(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            docSnapshot["is_male"] ? 'Male' : 'Female',
-                            style: GoogleFonts.montserrat(
-                                fontWeight: FontWeight.w700),
-                          ),
-                        ],
-                      ),
-                      const Divider()
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Age:",
-                            style: GoogleFonts.montserrat(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            "${bday.getCurrentAge()}",
-                            style: GoogleFonts.montserrat(
-                                fontWeight: FontWeight.w700),
-                          ),
-                        ],
-                      ),
-                      const Divider()
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Birth Date:",
-                            style: GoogleFonts.montserrat(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            bday.getFormattedDate(),
-                            style: GoogleFonts.montserrat(
-                                fontWeight: FontWeight.w700),
-                          ),
-                        ],
-                      ),
-                      const Divider()
-                    ],
-                  ),
-                  // Text(
-                  //   "Age: ${bday.getCurrentAge()}",
-                  //   style: GoogleFonts.montserrat(fontWeight: FontWeight.w400),
-                  // ),
-                  // Text(
-                  //   "Birth Date: ${bday.getFormattedDate()}",
-                  //   style: GoogleFonts.montserrat(fontWeight: FontWeight.w400),
-                  // ),
-                  // const SizedBox(
-                  //   height: 10,
-                  // ),
-                ],
-              ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 20,
             ),
-          ),
-          const SectionTitlesTemplate("More Details"),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: CardTemplate(
-              child: Column(
-                children: [
-                  const Divider(),
-                  Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Allergies:",
-                            style: GoogleFonts.montserrat(
-                              fontWeight: FontWeight.w500,
+            SectionTitlesTemplate("Patient Profile"),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: CardTemplate(
+                child: Column(
+                  children: [
+                    Text(
+                      "${docSnapshot["name"]}",
+                      style: GoogleFonts.montserrat(
+                          fontSize: 20, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Divider(),
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Sex:",
+                              style: GoogleFonts.montserrat(
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          Expanded(child: Container()),
-                          Expanded(
-                            child: Text(
-                              docSnapshot["allergies"] == ''
-                                  ? "none"
-                                  : docSnapshot["allergies"],
+                            Text(
+                              docSnapshot["is_male"] ? 'Male' : 'Female',
                               style: GoogleFonts.montserrat(
                                   fontWeight: FontWeight.w700),
-                              textAlign: TextAlign.right,
                             ),
-                          ),
-                        ],
-                      ),
-                      const Divider()
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Health Insurance:",
-                            style: GoogleFonts.montserrat(
-                              fontWeight: FontWeight.w500,
+                          ],
+                        ),
+                        const Divider()
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Age:",
+                              style: GoogleFonts.montserrat(
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          Text(
-                            docSnapshot["health_insurance"] == ''
-                                ? "none"
-                                : docSnapshot["health_insurance"],
-                            style: GoogleFonts.montserrat(
-                                fontWeight: FontWeight.w700),
-                          ),
-                        ],
-                      ),
-                      const Divider()
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Birth Date:",
-                            style: GoogleFonts.montserrat(
-                              fontWeight: FontWeight.w500,
+                            Text(
+                              "${bday.getCurrentAge()}",
+                              style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.w700),
                             ),
-                          ),
-                          Text(
-                            bday.getFormattedDate(),
-                            style: GoogleFonts.montserrat(
-                                fontWeight: FontWeight.w700),
-                          ),
-                        ],
-                      ),
-                      const Divider()
-                    ],
-                  ),
-                ],
+                          ],
+                        ),
+                        const Divider()
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Birth Date:",
+                              style: GoogleFonts.montserrat(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              bday.getFormattedDate(),
+                              style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          ],
+                        ),
+                        const Divider()
+                      ],
+                    ),
+                    // Text(
+                    //   "Age: ${bday.getCurrentAge()}",
+                    //   style: GoogleFonts.montserrat(fontWeight: FontWeight.w400),
+                    // ),
+                    // Text(
+                    //   "Birth Date: ${bday.getFormattedDate()}",
+                    //   style: GoogleFonts.montserrat(fontWeight: FontWeight.w400),
+                    // ),
+                    // const SizedBox(
+                    //   height: 10,
+                    // ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SectionTitlesTemplate("Transactions"),
-        ],
+            const SectionTitlesTemplate("More Details"),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: CardTemplate(
+                child: Column(
+                  children: [
+                    const Divider(),
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Allergies:",
+                              style: GoogleFonts.montserrat(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Expanded(child: Container()),
+                            Expanded(
+                              child: Text(
+                                docSnapshot["allergies"] == ''
+                                    ? "none"
+                                    : docSnapshot["allergies"],
+                                style: GoogleFonts.montserrat(
+                                    fontWeight: FontWeight.w700),
+                                textAlign: TextAlign.right,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Divider()
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Health Insurance:",
+                              style: GoogleFonts.montserrat(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              docSnapshot["health_insurance"] == ''
+                                  ? "none"
+                                  : docSnapshot["health_insurance"],
+                              style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          ],
+                        ),
+                        const Divider()
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Birth Date:",
+                              style: GoogleFonts.montserrat(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              bday.getFormattedDate(),
+                              style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          ],
+                        ),
+                        const Divider()
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SectionTitlesTemplate("Transactions"),
+            stream
+          ],
+        ),
       ),
     );
   }

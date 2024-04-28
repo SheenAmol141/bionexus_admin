@@ -172,16 +172,22 @@ class TransactionItem {
   String? description;
   double price;
   bool service;
+  int? numBuying;
 
   TransactionItem(
       {required this.itemName,
       this.numOfItems,
       this.description,
+      this.numBuying,
       required this.price,
       required this.service});
 
   ifService() {
     return service;
+  }
+
+  setNumBuying(count) {
+    numBuying = count;
   }
 
   getService() {
@@ -196,6 +202,7 @@ class TransactionItem {
     return {
       "item_name": itemName,
       "price": price,
+      "buyNum": numBuying,
       "number_of_items": numOfItems
     };
   }
