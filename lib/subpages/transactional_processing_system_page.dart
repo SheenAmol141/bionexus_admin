@@ -65,9 +65,70 @@ class TPS extends StatelessWidget {
           ),
           body: TabBarView(children: [
             NewTransaction(teamCode: teamCode),
-            Container(color: CupertinoColors.lightBackgroundGray)
+            AllTransactions(teamCode: teamCode, context)
           ]),
         ));
+  }
+}
+
+class AllTransactions extends StatelessWidget {
+  AllTransactions(this.scafcontext, {super.key, required this.teamCode});
+  String teamCode;
+  BuildContext scafcontext;
+  List<DocumentSnapshot> docs = [];
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: CupertinoColors.extraLightBackgroundGray,
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection("Teams")
+            .doc(teamCode)
+            .collection("Transactions")
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            try {
+              // try
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(color: AERO),
+                );
+              } else {
+                print(teamCode);
+                print("${snapshot.data!.docs.reversed.toList()} loaded");
+
+                for (dynamic doc in snapshot.data!.docs.reversed.toList()) {
+                  print("a");
+                  docs.add(doc);
+                }
+                return Container(
+                    child: ListView.separated(
+                  itemBuilder: (context, index) {
+                    return Text("a");
+                  },
+                  separatorBuilder: (context, index) => SizedBox(
+                    height: 20,
+                  ),
+                  itemCount: docs.length,
+                ));
+              }
+            } catch (e) {
+              //catch
+              return Center(
+                child: Text("Something went wrong."),
+              );
+            }
+          } else {
+            return Container(
+              child: Center(
+                child: Text("No Data"),
+              ),
+            );
+          }
+        },
+      ),
+    );
   }
 }
 
@@ -84,6 +145,7 @@ class NewTransaction extends StatefulWidget {
 }
 
 class _NewTransactionState extends State<NewTransaction> {
+  bool usePatient = true;
   String currentServicesSelected = 'loading';
   String currentItemSelected = 'loading';
   void getfirstService() {
@@ -112,6 +174,19 @@ class _NewTransactionState extends State<NewTransaction> {
     });
   }
 
+  void isPatientEmpty() {
+    FirebaseFirestore.instance
+        .collection("Teams")
+        .doc(widget.teamCode)
+        .collection("Patients")
+        .get()
+        .then((value) {
+      if (value.docs.toList() == []) {
+        usePatient = false;
+      }
+    });
+  }
+
   // getMedServices ============================
   bool loading = false;
 
@@ -120,6 +195,7 @@ class _NewTransactionState extends State<NewTransaction> {
     super.initState();
     getfirstService();
     getfirstItem();
+    isPatientEmpty();
   }
 
   List<Widget> mainColumn = [
@@ -130,8 +206,6 @@ class _NewTransactionState extends State<NewTransaction> {
   List<TransactionItem> items = [];
   Set<String> currentSelected = {"custom"};
   bool service = false;
-
-  bool usePatient = true;
 
   @override
   Widget build(BuildContext context) {
@@ -149,6 +223,8 @@ class _NewTransactionState extends State<NewTransaction> {
           TextEditingController customNumberController =
               TextEditingController();
           TextEditingController customDescriptionController =
+              TextEditingController();
+          TextEditingController selectPatientController =
               TextEditingController();
 
           void clearCustomForm() {
@@ -852,84 +928,167 @@ class _NewTransactionState extends State<NewTransaction> {
                           child: Text("Cancel")),
                       TextButton(
                         onPressed: () {
-                          bool load = false;
-                          CollectionReference transactionMain =
-                              FirebaseFirestore.instance
-                                  .collection("Teams")
-                                  .doc(widget.teamCode)
-                                  .collection("Transactions");
-                          CollectionReference transactionPatient =
-                              FirebaseFirestore.instance
-                                  .collection("Teams")
-                                  .doc(widget.teamCode)
-                                  .collection("Patients")
-                                  .doc(patientcurrentselected)
-                                  .collection("Transactions");
-                          DateTime timenow = DateTime.now();
-                          transactionPatient.doc("${timenow}").set(
-                              {"time_of_transaction": timenow}).then((value) {
-                            for (TransactionItem iteminreceipt in items) {
-                              if (iteminreceipt.ifService()) {
-                                transactionPatient // add to patient
-                                    .doc("$timenow")
-                                    .collection("Items")
-                                    .add({
-                                  "service": true,
-                                  "item_name":
-                                      iteminreceipt.getService()["item_name"],
-                                  "description":
-                                      iteminreceipt.getService()["description"],
-                                  "price": iteminreceipt.getService()["price"]
-                                }).then((value) {
-                                  //add to global
-                                  transactionMain
-                                      .doc("$timenow | $patientcurrentselected")
+                          if (usePatient) {
+                            print(patientcurrentselected);
+                            DateTime currentTime = DateTime.now();
+
+                            print("usepatient yes");
+                            CollectionReference
+                                patientYesCollection = //USEYES PATIENT INDIV COLLECTION
+                                FirebaseFirestore.instance
+                                    .collection("Teams")
+                                    .doc(widget.teamCode)
+                                    .collection("Patients")
+                                    .doc(patientcurrentselected)
+                                    .collection("Transactions");
+                            CollectionReference
+                                globalYesCollection = //USEYES GLOBAL COLLECTION
+                                FirebaseFirestore.instance
+                                    .collection("Teams")
+                                    .doc(widget.teamCode)
+                                    .collection("Transactions");
+
+                            //do function
+
+                            patientYesCollection //USEYES PATIENT INDIV COLLECTION -create transac doc
+                                .doc("$currentTime | $patientcurrentselected")
+                                .set({
+                              "time_of_transaction": currentTime,
+                              "name": patientcurrentselected,
+                              "walkin": false
+                            }).then((value) {
+                              for (TransactionItem item in items) {
+                                //USEYES PATIENT INDIV COLLECTION - start add item in transac doc
+                                if (item.ifService()) {
+                                  //USEYES PATIENT INDIV COLLECTION - SERVICE
+                                  patientYesCollection
+                                      .doc(
+                                          "$currentTime | $patientcurrentselected")
                                       .collection("Items")
                                       .add({
-                                    "service": true,
-                                    "item_name":
-                                        iteminreceipt.getService()["item_name"],
-                                    "description": iteminreceipt
-                                        .getService()["description"],
-                                    "price": iteminreceipt.getService()["price"]
+                                    "item_name": item.getService()["item_name"],
+                                    "description":
+                                        item.getService()["description"],
+                                    "price": item.getService()["price"],
+                                    "service": true
                                   });
-                                });
-                              } else {
-                                transactionPatient // add to patient
-                                    .doc("$timenow")
-                                    .collection("Items")
-                                    .add({
-                                  "service": false,
-                                  "item_name":
-                                      iteminreceipt.getItem()["item_name"],
-                                  "price": iteminreceipt.getItem()["price"],
-                                  "buyNum": iteminreceipt.getItem()["buyNum"]
-                                }).then((value) {
-                                  transactionMain
-                                      .doc("$timenow | $patientcurrentselected")
+                                } else {
+                                  //USEYES PATIENT INDIV COLLECTION - ITEM
+                                  patientYesCollection
+                                      .doc(
+                                          "$currentTime | $patientcurrentselected")
                                       .collection("Items")
                                       .add({
-                                    "service": false,
-                                    "item_name":
-                                        iteminreceipt.getItem()["item_name"],
-                                    "price": iteminreceipt.getItem()["price"],
-                                    "buyNum": iteminreceipt.getItem()["buyNum"]
+                                    "item_name": item.getItem()["item_name"],
+                                    "buyNum": item.getItem()["buyNum"],
+                                    "price": item.getItem()["price"],
+                                    "service": false
                                   });
-                                });
+                                }
                               }
-                            }
-                          }).then((value) {
-                            Navigator.pop(context);
-                            setStateHere(
-                              () {
-                                items = [];
-                              },
-                            );
-                            scafcon;
-                            ScaffoldMessenger.of(scafcon).showSnackBar(SnackBar(
-                                content:
-                                    Text("Receipt Confirmed and Uploaded!")));
-                          });
+                            });
+
+                            globalYesCollection //USEYES PATIENT INDIV COLLECTION -create transac doc
+                                .doc("$currentTime | $patientcurrentselected")
+                                .set({
+                              "time_of_transaction": currentTime,
+                              "name": patientcurrentselected,
+                              "walkin": false
+                            }).then((value) {
+                              for (TransactionItem item in items) {
+                                //USEYES PATIENT INDIV COLLECTION - start add item in transac doc
+                                if (item.ifService()) {
+                                  //USEYES PATIENT INDIV COLLECTION - SERVICE
+                                  globalYesCollection
+                                      .doc(
+                                          "$currentTime | $patientcurrentselected")
+                                      .collection("Items")
+                                      .add({
+                                    "item_name": item.getService()["item_name"],
+                                    "description":
+                                        item.getService()["description"],
+                                    "price": item.getService()["price"]
+                                  });
+                                } else {
+                                  //USEYES PATIENT INDIV COLLECTION - ITEM
+                                  globalYesCollection
+                                      .doc(
+                                          "$currentTime | $patientcurrentselected")
+                                      .collection("Items")
+                                      .add({
+                                    "item_name": item.getItem()["item_name"],
+                                    "buyNum": item.getItem()["buyNum"],
+                                    "price": item.getItem()["price"]
+                                  });
+                                }
+                              }
+                            }).then((value) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(scafcon).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          "Receipt Confirmed and Uploaded!")));
+                            });
+                            //end of usepatient
+                          } else {
+                            print("usepatient no");
+
+                            print(selectPatientController.text);
+                            DateTime currentTime = DateTime.now();
+                            CollectionReference
+                                globalYesCollection = //USEYES GLOBAL COLLECTION
+                                FirebaseFirestore.instance
+                                    .collection("Teams")
+                                    .doc(widget.teamCode)
+                                    .collection("Transactions");
+
+                            //do function
+
+                            globalYesCollection //USEYES PATIENT INDIV COLLECTION -create transac doc
+                                .doc(
+                                    "$currentTime | ${selectPatientController.text}")
+                                .set({
+                              "time_of_transaction": currentTime,
+                              "name": selectPatientController.text,
+                              "walkin": true
+                            }).then((value) {
+                              for (TransactionItem item in items) {
+                                //USEYES PATIENT INDIV COLLECTION - start add item in transac doc
+                                if (item.ifService()) {
+                                  //USEYES PATIENT INDIV COLLECTION - SERVICE
+                                  globalYesCollection
+                                      .doc(
+                                          "$currentTime | ${selectPatientController.text}")
+                                      .collection("Items")
+                                      .add({
+                                    "item_name": item.getService()["item_name"],
+                                    "description":
+                                        item.getService()["description"],
+                                    "price": item.getService()["price"],
+                                    "service": true
+                                  });
+                                } else {
+                                  //USEYES PATIENT INDIV COLLECTION - ITEM
+                                  globalYesCollection
+                                      .doc(
+                                          "$currentTime | ${selectPatientController.text}")
+                                      .collection("Items")
+                                      .add({
+                                    "item_name": item.getItem()["item_name"],
+                                    "buyNum": item.getItem()["buyNum"],
+                                    "price": item.getItem()["price"],
+                                    "service": false
+                                  });
+                                }
+                              }
+                            }).then((value) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(scafcon).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          "Receipt Confirmed and Uploaded!")));
+                            });
+                          }
                         },
                         style: ButtonStyle(
                             textStyle: MaterialStatePropertyAll(
@@ -955,8 +1114,7 @@ class _NewTransactionState extends State<NewTransaction> {
           bool inputpatient = false;
 
           final selectPatientKey = GlobalKey<FormState>();
-          TextEditingController selectPatientController =
-              TextEditingController();
+
           CardTemplate selectPatientForTransaction = CardTemplate(
               child: Container(
             child: StreamBuilder(
@@ -991,56 +1149,60 @@ class _NewTransactionState extends State<NewTransaction> {
                     }
 
                     patientcurrentselected = _patients.first["name"];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SectionTitlesTemplate("Buyer Details"),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        Row(
+                    return StatefulBuilder(
+                      builder: (context, setStateSwitch) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Use an Existing Patient?"),
+                            SectionTitlesTemplate("Buyer Details"),
                             SizedBox(
-                              width: 10,
+                              height: 5,
                             ),
-                            Switch(
-                              value: usePatient,
-                              onChanged: (value) {
-                                setStateHere(
-                                  () {
-                                    usePatient = value;
+                            Row(
+                              children: [
+                                Text("Use an Existing Patient?"),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Switch(
+                                  value: usePatient,
+                                  onChanged: (value) {
+                                    setStateSwitch(
+                                      () {
+                                        usePatient = value;
+                                      },
+                                    );
                                   },
-                                );
-                              },
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 5,
-                        ),
-                        usePatient
-                            ? StatefulBuilder(
-                                builder: (context, setStatepatient) {
-                                  return DropdownButton(
-                                    isExpanded: true,
-                                    onChanged: (value) {
-                                      setStatepatient(() {
-                                        patientcurrentselected =
-                                            value.toString();
-                                      });
+                            SizedBox(
+                              height: 5,
+                            ),
+                            usePatient
+                                ? StatefulBuilder(
+                                    builder: (context, setStatepatient) {
+                                      return DropdownButton(
+                                        isExpanded: true,
+                                        onChanged: (value) {
+                                          setStatepatient(() {
+                                            patientcurrentselected =
+                                                value.toString();
+                                          });
+                                        },
+                                        value: patientcurrentselected,
+                                        items: _patients.map((e) {
+                                          return DropdownMenuItem(
+                                              value: e["name"],
+                                              child: Text(e["name"]));
+                                        }).toList(),
+                                      );
                                     },
-                                    value: patientcurrentselected,
-                                    items: _patients.map((e) {
-                                      return DropdownMenuItem(
-                                          value: e["name"],
-                                          child: Text(e["name"]));
-                                    }).toList(),
-                                  );
-                                },
-                              )
-                            : walkinpatient,
-                      ],
+                                  )
+                                : walkinpatient,
+                          ],
+                        );
+                      },
                     );
                   } catch (e) {
                     usePatient = false;
