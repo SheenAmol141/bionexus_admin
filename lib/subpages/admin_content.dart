@@ -1,102 +1,11 @@
-// import 'package:flutter/material.dart';
-
-// class LicensesPage extends StatefulWidget {
-//   const LicensesPage({super.key});
-
-//   @override
-//   State<LicensesPage> createState() => _LicensesPageState();
-// }
-
-// class _LicensesPageState extends State<LicensesPage> {
-//   @override
-//   Widget build(BuildContext context) {
-
-//     final myInt = Future.de
-
-//     return Container(child: StreamBuilder(stream: , builder: builder),);
-
-//   }
-// }
-
 // ignore_for_file: prefer_const_constructors
 
-import 'package:bionexus_admin/subpages/fitted_video.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/hex_color.dart';
-
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return FirebaseAuth.instance.currentUser != null
-        ? AdminContent()
-        : Stack(
-            // --------------------------------------------------------------------------------------------------- loginScreen
-
-            children: [
-              FittedVideo(),
-              Opacity(
-                opacity: .9,
-                child: Container(
-                  color: DARK_GREEN,
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                ),
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    children: [
-                      SizedBox(
-                        height: 200,
-                      ),
-                      SizedBox(
-                          width: 420,
-                          child: Image.asset("assets/bionexuslogo.png")),
-                    ],
-                  ),
-                  Container(
-                    padding: EdgeInsets.all(15),
-                    decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(30),
-                            topRight: Radius.circular(30))),
-                    height: 500,
-                    width: MediaQuery.of(context).size.width,
-                    child: Container(
-                      child: SignInScreen(providers: [
-                        EmailAuthProvider(),
-                      ], actions: [
-                        AuthStateChangeAction<UserCreated>((context, state) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                  "Account created successfully, signed in")));
-                          setState(() {});
-                        }),
-                        AuthStateChangeAction<SignedIn>((context, state) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Signed in")));
-                          setState(() {});
-                        })
-                      ]),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          );
-  }
-}
+import 'package:bionexus_admin/subpages/admin_pages/licenses_page.dart';
+import 'package:bionexus_admin/subpages/main_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class AdminContent extends StatefulWidget {
   const AdminContent({super.key});
@@ -118,7 +27,7 @@ class _AdminContentState extends State<AdminContent> {
         appBar: AppBar(
           centerTitle: true,
           title: Text(
-            "BIONEXUS",
+            "BIONEXUS - ADMIN",
             style: TextStyle(
                 color: Colors.white,
                 fontFamily: "montserrat",
@@ -207,24 +116,16 @@ class _AdminContentState extends State<AdminContent> {
                 ),
 
                 onTap: () {
-                  FirebaseAuth.instance.signOut();
-                  Future.delayed(Duration(milliseconds: 300), () {
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => MainScreen()));
-                  });
+                  logout(context);
                 },
               ),
             ],
           ),
         ),
         body: currentPage.isEmpty
-            ? Center(
-                child: Text("Licenses"),
-              )
+            ? LicensesPage()
             : currentPage == "Licenses"
-                ? Center(
-                    child: Text("Licenses"),
-                  )
+                ? LicensesPage()
                 : currentPage == "Sales"
                     ? Center(
                         child: Text("Sales"),

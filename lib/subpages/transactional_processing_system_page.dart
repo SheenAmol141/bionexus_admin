@@ -10,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_multi_formatter/formatters/formatter_utils.dart';
 import 'package:flutter_multi_formatter/formatters/money_input_formatter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -93,7 +94,7 @@ class _NewTransactionState extends State<NewTransaction> {
         .get()
         .then((value) {
       if (value.docs.isNotEmpty) {
-        currentItemSelected = value.docs.reversed.first["item_name"];
+        currentServicesSelected = value.docs.reversed.first["item_name"];
       }
     });
   }
@@ -134,6 +135,7 @@ class _NewTransactionState extends State<NewTransaction> {
 
   @override
   Widget build(BuildContext context) {
+    BuildContext scafcon = context;
     final customKey = GlobalKey<FormState>();
     final itemKey = GlobalKey<FormState>();
 
@@ -850,6 +852,7 @@ class _NewTransactionState extends State<NewTransaction> {
                           child: Text("Cancel")),
                       TextButton(
                         onPressed: () {
+                          bool load = false;
                           CollectionReference transactionMain =
                               FirebaseFirestore.instance
                                   .collection("Teams")
@@ -859,8 +862,74 @@ class _NewTransactionState extends State<NewTransaction> {
                               FirebaseFirestore.instance
                                   .collection("Teams")
                                   .doc(widget.teamCode)
-                                  .collection("Patients");
-                          for (TransactionItem item in items) {}
+                                  .collection("Patients")
+                                  .doc(patientcurrentselected)
+                                  .collection("Transactions");
+                          DateTime timenow = DateTime.now();
+                          transactionPatient.doc("${timenow}").set(
+                              {"time_of_transaction": timenow}).then((value) {
+                            for (TransactionItem iteminreceipt in items) {
+                              if (iteminreceipt.ifService()) {
+                                transactionPatient // add to patient
+                                    .doc("$timenow")
+                                    .collection("Items")
+                                    .add({
+                                  "service": true,
+                                  "item_name":
+                                      iteminreceipt.getService()["item_name"],
+                                  "description":
+                                      iteminreceipt.getService()["description"],
+                                  "price": iteminreceipt.getService()["price"]
+                                }).then((value) {
+                                  //add to global
+                                  transactionMain
+                                      .doc("$timenow | $patientcurrentselected")
+                                      .collection("Items")
+                                      .add({
+                                    "service": true,
+                                    "item_name":
+                                        iteminreceipt.getService()["item_name"],
+                                    "description": iteminreceipt
+                                        .getService()["description"],
+                                    "price": iteminreceipt.getService()["price"]
+                                  });
+                                });
+                              } else {
+                                transactionPatient // add to patient
+                                    .doc("$timenow")
+                                    .collection("Items")
+                                    .add({
+                                  "service": false,
+                                  "item_name":
+                                      iteminreceipt.getItem()["item_name"],
+                                  "price": iteminreceipt.getItem()["price"],
+                                  "buyNum": iteminreceipt.getItem()["buyNum"]
+                                }).then((value) {
+                                  transactionMain
+                                      .doc("$timenow | $patientcurrentselected")
+                                      .collection("Items")
+                                      .add({
+                                    "service": false,
+                                    "item_name":
+                                        iteminreceipt.getItem()["item_name"],
+                                    "price": iteminreceipt.getItem()["price"],
+                                    "buyNum": iteminreceipt.getItem()["buyNum"]
+                                  });
+                                });
+                              }
+                            }
+                          }).then((value) {
+                            Navigator.pop(context);
+                            setStateHere(
+                              () {
+                                items = [];
+                              },
+                            );
+                            scafcon;
+                            ScaffoldMessenger.of(scafcon).showSnackBar(SnackBar(
+                                content:
+                                    Text("Receipt Confirmed and Uploaded!")));
+                          });
                         },
                         style: ButtonStyle(
                             textStyle: MaterialStatePropertyAll(

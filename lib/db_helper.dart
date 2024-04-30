@@ -24,7 +24,9 @@ void createTeam(context) {
   String email = FirebaseAuth.instance.currentUser!.email!;
   FirebaseFirestore.instance.collection("Teams").doc(uid).set({
     "root-user": email,
-    "members": [email]
+    "members": [email],
+    "subscription_deadline": DateTime.now().add(const Duration(days: 14)),
+    "in_trial": true
   });
   FirebaseFirestore.instance
       .collection("Users")
@@ -81,7 +83,7 @@ void joinTeam(String teamCode, context) {
               FirebaseFirestore.instance
                   .collection("Teams")
                   .doc(oldTeamCode)
-                  .set({"root-user": rootUser, "members": oldMembers}).then(
+                  .update({"root-user": rootUser, "members": oldMembers}).then(
                       (value) {
                 //new team
                 FirebaseFirestore.instance

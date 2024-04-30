@@ -383,6 +383,8 @@ class MoreAboutPage extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.all(20),
               child: ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: _transactions.length,
                 itemBuilder: (context, index) {
                   return CardTemplate(child: Column());
@@ -495,17 +497,6 @@ class MoreAboutPage extends StatelessWidget {
                         const Divider()
                       ],
                     ),
-                    // Text(
-                    //   "Age: ${bday.getCurrentAge()}",
-                    //   style: GoogleFonts.montserrat(fontWeight: FontWeight.w400),
-                    // ),
-                    // Text(
-                    //   "Birth Date: ${bday.getFormattedDate()}",
-                    //   style: GoogleFonts.montserrat(fontWeight: FontWeight.w400),
-                    // ),
-                    // const SizedBox(
-                    //   height: 10,
-                    // ),
                   ],
                 ),
               ),
@@ -518,6 +509,7 @@ class MoreAboutPage extends StatelessWidget {
                   children: [
                     const Divider(),
                     Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -528,16 +520,14 @@ class MoreAboutPage extends StatelessWidget {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            Expanded(child: Container()),
-                            Expanded(
-                              child: Text(
-                                docSnapshot["allergies"] == ''
-                                    ? "none"
-                                    : docSnapshot["allergies"],
-                                style: GoogleFonts.montserrat(
-                                    fontWeight: FontWeight.w700),
-                                textAlign: TextAlign.right,
-                              ),
+                            Container(),
+                            Text(
+                              docSnapshot["allergies"] == ''
+                                  ? "none"
+                                  : docSnapshot["allergies"],
+                              style: GoogleFonts.montserrat(
+                                  fontWeight: FontWeight.w700),
+                              textAlign: TextAlign.right,
                             ),
                           ],
                         ),
