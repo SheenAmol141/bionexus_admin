@@ -1,5 +1,6 @@
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/hex_color.dart';
+import 'package:bionexus_admin/subpages/tps_pages/all_transactions_tab.dart';
 import 'package:bionexus_admin/templates.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:bionexus_admin/subpages/patient_records/patient_transactions.dart'
+    hide ReceiptDetailsPage;
 
 class PatientRecordsPage extends StatelessWidget {
   final String teamCode;
@@ -56,63 +59,68 @@ class PatientRecordsPage extends StatelessWidget {
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: EdgeInsets.all(20),
-                      child: ListView.separated(
-                        separatorBuilder: (context, index) => SizedBox(
-                          height: 20,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: ListView.separated(
+                          separatorBuilder: (context, index) => SizedBox(
+                            height: 20,
+                          ),
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: patientDocSnapshots.length,
+                          itemBuilder: (context, index) {
+                            DateTime timestampToDateTime(Timestamp timestamp) {
+                              return timestamp.toDate();
+                            }
+
+                            Birthdate bday = Birthdate(timestampToDateTime(
+                                patientDocSnapshots[index]["birthdate"]));
+
+                            return CardTemplate(
+                                child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "${patientDocSnapshots[index]["name"]}",
+                                  style: GoogleFonts.montserrat(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                Text(
+                                  "Sex: ${patientDocSnapshots[index]["is_male"] ? 'Male' : 'Female'}",
+                                  style: GoogleFonts.montserrat(
+                                      fontWeight: FontWeight.w400),
+                                ),
+                                Text(
+                                  "Age: ${bday.getCurrentAge()}",
+                                  style: GoogleFonts.montserrat(
+                                      fontWeight: FontWeight.w400),
+                                ),
+                                Text(
+                                  "Birth Date: ${bday.getFormattedDate()}",
+                                  style: GoogleFonts.montserrat(
+                                      fontWeight: FontWeight.w400),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                TextButton.icon(
+                                  icon: Icon(Icons.arrow_right_rounded),
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                      builder: (context) => MoreAboutPage(
+                                          docSnapshot:
+                                              patientDocSnapshots[index],
+                                          teamCode: teamCode),
+                                    ));
+                                  },
+                                  label: Text("More about this patient"),
+                                )
+                              ],
+                            ));
+                          },
                         ),
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: patientDocSnapshots.length,
-                        itemBuilder: (context, index) {
-                          DateTime timestampToDateTime(Timestamp timestamp) {
-                            return timestamp.toDate();
-                          }
-
-                          Birthdate bday = Birthdate(timestampToDateTime(
-                              patientDocSnapshots[index]["birthdate"]));
-
-                          return CardTemplate(
-                              child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "${patientDocSnapshots[index]["name"]}",
-                                style: GoogleFonts.montserrat(
-                                    fontSize: 18, fontWeight: FontWeight.w500),
-                              ),
-                              Text(
-                                "Sex: ${patientDocSnapshots[index]["is_male"] ? 'Male' : 'Female'}",
-                                style: GoogleFonts.montserrat(
-                                    fontWeight: FontWeight.w400),
-                              ),
-                              Text(
-                                "Age: ${bday.getCurrentAge()}",
-                                style: GoogleFonts.montserrat(
-                                    fontWeight: FontWeight.w400),
-                              ),
-                              Text(
-                                "Birth Date: ${bday.getFormattedDate()}",
-                                style: GoogleFonts.montserrat(
-                                    fontWeight: FontWeight.w400),
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              TextButton.icon(
-                                icon: Icon(Icons.arrow_right_rounded),
-                                onPressed: () {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => MoreAboutPage(
-                                        docSnapshot: patientDocSnapshots[index],
-                                        teamCode: teamCode),
-                                  ));
-                                },
-                                label: Text("More about this patient"),
-                              )
-                            ],
-                          ));
-                        },
                       ),
                     ),
                   ),
@@ -346,24 +354,51 @@ class Birthdate {
   }
 }
 
-class MoreAboutPage extends StatelessWidget {
+class MoreAboutPage extends StatefulWidget {
   MoreAboutPage({super.key, required this.docSnapshot, required this.teamCode});
   String teamCode;
   DocumentSnapshot docSnapshot;
+
+  @override
+  State<MoreAboutPage> createState() => _MoreAboutPageState();
+}
+
+class _MoreAboutPageState extends State<MoreAboutPage> {
+  bool notransac = false;
+
+  void initnotransac() {
+    // ignore: avoid_single_cascade_in_expression_statements
+    FirebaseFirestore.instance
+      ..collection("Teams")
+          .doc(widget.teamCode)
+          .collection("Patients")
+          .doc(widget.docSnapshot["name"])
+          .collection("Transactions")
+          .get()
+          .then((value) {
+        if (value.docs.toList().isEmpty) {
+          setState(() {
+            notransac = true;
+          });
+        }
+      });
+  }
+
   @override
   Widget build(BuildContext context) {
     DateTime timestampToDateTime(Timestamp timestamp) {
       return timestamp.toDate();
     }
 
-    Birthdate bday = Birthdate(timestampToDateTime(docSnapshot["birthdate"]));
+    Birthdate bday =
+        Birthdate(timestampToDateTime(widget.docSnapshot["birthdate"]));
 
     StreamBuilder stream = StreamBuilder(
       stream: FirebaseFirestore.instance
           .collection("Teams")
-          .doc(teamCode)
+          .doc(widget.teamCode)
           .collection("Patients")
-          .doc(docSnapshot["name"])
+          .doc(widget.docSnapshot["name"])
           .collection("Transactions")
           .snapshots(),
       builder: (context, snapshot) {
@@ -373,32 +408,114 @@ class MoreAboutPage extends StatelessWidget {
             _transactions.add(doc);
           }
           if (_transactions.length == 0) {
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: Container(
-                child: const CardTemplate(child: Text("No Transactions")),
-              ),
+            return Container(
+              child: const CardTemplate(child: Text("No Transactions")),
             );
           } else {
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _transactions.length,
-                itemBuilder: (context, index) {
-                  return CardTemplate(child: Column());
-                },
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                DocumentSnapshot currentDoc = _transactions[index];
+                String dateminutetime =
+                    "${DateFormat.jm().format(currentDoc["time_of_transaction"].toDate())}";
+                String datetime =
+                    "${DateFormat("MMMM dd, yyyy").format(currentDoc["time_of_transaction"].toDate())}";
+                return StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection("Teams")
+                        .doc(widget.teamCode)
+                        .collection("Transactions")
+                        .doc(currentDoc.id)
+                        .collection("Items")
+                        .snapshots(),
+                    builder: (context, snapshots) {
+                      if (snapshots.hasData) {
+                        if (snapshots.connectionState ==
+                            ConnectionState.waiting) {
+                          return CardTemplate(
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AERO,
+                              ),
+                            ),
+                          );
+                        } else {
+                          double total = 0;
+                          for (DocumentSnapshot item
+                              in snapshots.data!.docs.toList()) {
+                            if (item["service"]) {
+                              total += item["price"];
+                            } else {
+                              total += (item["price"] * item["buyNum"]);
+                            }
+                          }
+                          return CardTemplate(
+                              child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                currentDoc["name"] != ''
+                                    ? "$datetime - $dateminutetime | ${currentDoc["name"]}"
+                                    : "$datetime - $dateminutetime | anonymous",
+                                style: GoogleFonts.montserrat(
+                                    fontSize: 18, fontWeight: FontWeight.w600),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "Total: ",
+                                  ),
+                                  Text(
+                                    "${NumberFormat.currency(symbol: '\$ ').format(total)} ",
+                                    style: GoogleFonts.montserrat(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              TextButton.icon(
+                                icon: Icon(Icons.arrow_right_rounded),
+                                onPressed: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => ReceiptDetailsPage(
+                                      currentDoc,
+                                      widget.teamCode,
+                                      walkin: currentDoc["walkin"],
+                                      total: total,
+                                    ),
+                                  ));
+                                },
+                                label: Text("More details"),
+                              )
+                            ],
+                          ));
+                        }
+                      } else {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: AERO,
+                          ),
+                        );
+                      }
+                    });
+              },
+              separatorBuilder: (context, index) => SizedBox(
+                height: 20,
               ),
+              itemCount: 1,
             );
           }
         } catch (e) {
-          return Scaffold(
-            backgroundColor: CupertinoColors.extraLightBackgroundGray,
-            body: Center(
-              child: CircularProgressIndicator(
-                color: AERO,
-              ),
+          return Center(
+            child: CircularProgressIndicator(
+              color: AERO,
             ),
           );
         }
@@ -410,23 +527,27 @@ class MoreAboutPage extends StatelessWidget {
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: EMERALD,
-        title: Text("More about ${docSnapshot["name"]}"),
+        title: Text("More about ${widget.docSnapshot["name"]}"),
       ),
       backgroundColor: CupertinoColors.extraLightBackgroundGray,
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(
               height: 20,
             ),
-            SectionTitlesTemplate("Patient Profile"),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: SectionTitlesTemplate("Patient Profile"),
+            ),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: CardTemplate(
                 child: Column(
                   children: [
                     Text(
-                      "${docSnapshot["name"]}",
+                      "${widget.docSnapshot["name"]}",
                       style: GoogleFonts.montserrat(
                           fontSize: 20, fontWeight: FontWeight.w600),
                     ),
@@ -446,7 +567,7 @@ class MoreAboutPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              docSnapshot["is_male"] ? 'Male' : 'Female',
+                              widget.docSnapshot["is_male"] ? 'Male' : 'Female',
                               style: GoogleFonts.montserrat(
                                   fontWeight: FontWeight.w700),
                             ),
@@ -501,7 +622,10 @@ class MoreAboutPage extends StatelessWidget {
                 ),
               ),
             ),
-            const SectionTitlesTemplate("More Details"),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: const SectionTitlesTemplate("More Details"),
+            ),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: CardTemplate(
@@ -522,9 +646,9 @@ class MoreAboutPage extends StatelessWidget {
                             ),
                             Container(),
                             Text(
-                              docSnapshot["allergies"] == ''
+                              widget.docSnapshot["allergies"] == ''
                                   ? "none"
-                                  : docSnapshot["allergies"],
+                                  : widget.docSnapshot["allergies"],
                               style: GoogleFonts.montserrat(
                                   fontWeight: FontWeight.w700),
                               textAlign: TextAlign.right,
@@ -546,30 +670,9 @@ class MoreAboutPage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              docSnapshot["health_insurance"] == ''
+                              widget.docSnapshot["health_insurance"] == ''
                                   ? "none"
-                                  : docSnapshot["health_insurance"],
-                              style: GoogleFonts.montserrat(
-                                  fontWeight: FontWeight.w700),
-                            ),
-                          ],
-                        ),
-                        const Divider()
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Birth Date:",
-                              style: GoogleFonts.montserrat(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              bday.getFormattedDate(),
+                                  : widget.docSnapshot["health_insurance"],
                               style: GoogleFonts.montserrat(
                                   fontWeight: FontWeight.w700),
                             ),
@@ -582,8 +685,31 @@ class MoreAboutPage extends StatelessWidget {
                 ),
               ),
             ),
-            const SectionTitlesTemplate("Transactions"),
-            stream
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: const SectionTitlesTemplate("Most Recent Transaction"),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: stream,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20.0),
+              child: Container(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => PatientAllTransactions(context,
+                              teamCode: widget.teamCode,
+                              name: widget.docSnapshot["name"]),
+                        ));
+                      },
+                      child: Text("View All Transactions.")),
+                ),
+              ),
+            )
           ],
         ),
       ),

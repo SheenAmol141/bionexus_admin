@@ -17,6 +17,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:async/async.dart';
 
+import 'tps_pages/all_transactions_tab.dart';
+
 class TPS extends StatelessWidget {
   TPS({super.key, required this.teamCode});
   String teamCode;
@@ -68,67 +70,6 @@ class TPS extends StatelessWidget {
             AllTransactions(teamCode: teamCode, context)
           ]),
         ));
-  }
-}
-
-class AllTransactions extends StatelessWidget {
-  AllTransactions(this.scafcontext, {super.key, required this.teamCode});
-  String teamCode;
-  BuildContext scafcontext;
-  List<DocumentSnapshot> docs = [];
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: CupertinoColors.extraLightBackgroundGray,
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection("Teams")
-            .doc(teamCode)
-            .collection("Transactions")
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            try {
-              // try
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CircularProgressIndicator(color: AERO),
-                );
-              } else {
-                print(teamCode);
-                print("${snapshot.data!.docs.reversed.toList()} loaded");
-
-                for (dynamic doc in snapshot.data!.docs.reversed.toList()) {
-                  print("a");
-                  docs.add(doc);
-                }
-                return Container(
-                    child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    return Text("a");
-                  },
-                  separatorBuilder: (context, index) => SizedBox(
-                    height: 20,
-                  ),
-                  itemCount: docs.length,
-                ));
-              }
-            } catch (e) {
-              //catch
-              return Center(
-                child: Text("Something went wrong."),
-              );
-            }
-          } else {
-            return Container(
-              child: Center(
-                child: Text("No Data"),
-              ),
-            );
-          }
-        },
-      ),
-    );
   }
 }
 
@@ -1007,7 +948,8 @@ class _NewTransactionState extends State<NewTransaction> {
                                     "item_name": item.getService()["item_name"],
                                     "description":
                                         item.getService()["description"],
-                                    "price": item.getService()["price"]
+                                    "price": item.getService()["price"],
+                                    "service": true
                                   });
                                 } else {
                                   //USEYES PATIENT INDIV COLLECTION - ITEM
@@ -1018,7 +960,8 @@ class _NewTransactionState extends State<NewTransaction> {
                                       .add({
                                     "item_name": item.getItem()["item_name"],
                                     "buyNum": item.getItem()["buyNum"],
-                                    "price": item.getItem()["price"]
+                                    "price": item.getItem()["price"],
+                                    "service": false
                                   });
                                 }
                               }
@@ -1124,19 +1067,28 @@ class _NewTransactionState extends State<NewTransaction> {
                   .collection("Patients")
                   .snapshots(),
               builder: (context, snapshot) {
-                Widget walkinpatient = Form(
-                  key: selectPatientKey,
-                  child: TextFormField(
-                    decoration: InputDecoration(label: Text("Name")),
-                    controller: selectPatientController,
-                    validator: (value) {
-                      if (value == null || value == "") {
-                        return "Name must not be empty!";
-                      } else if (value!.length < 3) {
-                        return "Name must be more than 3 characters!";
-                      }
-                    },
-                  ),
+                Widget walkinpatient = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Enter only after adding all items."),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Form(
+                      key: selectPatientKey,
+                      child: TextFormField(
+                        decoration: InputDecoration(label: Text("Name")),
+                        controller: selectPatientController,
+                        validator: (value) {
+                          if (value == null || value == "") {
+                            return "Name must not be empty!";
+                          } else if (value!.length < 3) {
+                            return "Name must be more than 3 characters!";
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 );
 
                 List<DocumentSnapshot> _patients = [];
