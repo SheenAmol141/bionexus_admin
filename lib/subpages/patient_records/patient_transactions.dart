@@ -235,13 +235,13 @@ class ReceiptDetailsPage extends StatelessWidget {
                     if (_doc["service"]) {
                       _items.add(TransactionItem(
                           itemName: _doc["item_name"],
-                          price: _doc["price"],
+                          price: double.parse(_doc["price"].toString()),
                           service: true,
                           description: _doc["description"]));
                     } else {
                       _items.add(TransactionItem(
                           itemName: _doc["item_name"],
-                          price: _doc["price"],
+                          price: double.parse(_doc["price"].toString()),
                           service: false,
                           numBuying: _doc["buyNum"]));
                     }
@@ -356,90 +356,114 @@ class ReceiptDetailsPage extends StatelessWidget {
                         height: 20,
                       ),
                       Container(
-                        child: walkin
-                            ? CardTemplate(
-                                child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "Total:",
-                                        style: GoogleFonts.montserrat(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 18),
-                                      ),
-                                      Text(
-                                        "${NumberFormat.currency(symbol: '\$ ').format(total)} ",
-                                        style: GoogleFonts.montserrat(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  Divider(),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  Text(
-                                    "Time of Transaction: ${DateFormat("MMMM dd, yyyy").format(doc["time_of_transaction"].toDate())} ${DateFormat.jm().format(doc["time_of_transaction"].toDate()).toString()}",
-                                    style: GoogleFonts.montserrat(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 17),
-                                  ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  Container(
-                                    child: Column(
+                          child: walkin
+                              ? CardTemplate(
+                                  child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          "This is a Walk In Transaction",
+                                          "Total:",
                                           style: GoogleFonts.montserrat(
                                               fontWeight: FontWeight.w600,
-                                              fontSize: 17),
+                                              fontSize: 18),
                                         ),
-                                        SizedBox(
-                                          height: 20,
+                                        Text(
+                                          "${NumberFormat.currency(symbol: '\$ ').format(total)} ",
+                                          style: GoogleFonts.montserrat(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w600),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  Text(
-                                    "Name: ${doc["name"].toString().isEmpty ? "anonymous" : doc["name"]}",
-                                    style: GoogleFonts.montserrat(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 17),
-                                  )
-                                ],
-                              ))
-                            : CardTemplate(
-                                child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Time of Transaction: ${DateFormat("MMMM dd, yyyy").format(doc["time_of_transaction"].toDate())} ${DateFormat.jm().format(doc["time_of_transaction"].toDate()).toString()}",
-                                    style: GoogleFonts.montserrat(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 17),
-                                  ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  Text(
-                                    "Name: ${doc["name"].toString().isEmpty ? "anonymous" : doc["name"]}",
-                                    style: GoogleFonts.montserrat(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 17),
-                                  )
-                                ],
-                              )),
-                      ),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Divider(),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      "Time of Transaction: ${DateFormat("MMMM dd, yyyy").format(doc["time_of_transaction"].toDate())} ${DateFormat.jm().format(doc["time_of_transaction"].toDate()).toString()}",
+                                      style: GoogleFonts.montserrat(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 17),
+                                    ),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Container(
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            "This is a Walk In Transaction",
+                                            style: GoogleFonts.montserrat(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 17),
+                                          ),
+                                          SizedBox(
+                                            height: 20,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      "Name: ${doc["name"].toString().isEmpty ? "anonymous" : doc["name"]}",
+                                      style: GoogleFonts.montserrat(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 17),
+                                    )
+                                  ],
+                                ))
+                              : CardTemplate(
+                                  child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Total:",
+                                          style: GoogleFonts.montserrat(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 18),
+                                        ),
+                                        Text(
+                                          "${NumberFormat.currency(symbol: '\$ ').format(total)} ",
+                                          style: GoogleFonts.montserrat(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Divider(),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      "Time of Transaction: ${DateFormat("MMMM dd, yyyy").format(doc["time_of_transaction"].toDate())} ${DateFormat.jm().format(doc["time_of_transaction"].toDate()).toString()}",
+                                      style: GoogleFonts.montserrat(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 17),
+                                    ),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      "Name: ${doc["name"].toString().isEmpty ? "anonymous" : doc["name"]}",
+                                      style: GoogleFonts.montserrat(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 17),
+                                    )
+                                  ],
+                                ))),
                       SizedBox(
                         height: 20,
                       ),

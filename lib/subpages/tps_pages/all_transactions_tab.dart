@@ -226,13 +226,13 @@ class ReceiptDetailsPage extends StatelessWidget {
                     if (_doc["service"]) {
                       _items.add(TransactionItem(
                           itemName: _doc["item_name"],
-                          price: _doc["price"],
+                          price: double.parse(_doc["price"].toString()),
                           service: true,
                           description: _doc["description"]));
                     } else {
                       _items.add(TransactionItem(
                           itemName: _doc["item_name"],
-                          price: _doc["price"],
+                          price: double.parse(_doc["price"].toString()),
                           service: false,
                           numBuying: _doc["buyNum"]));
                     }

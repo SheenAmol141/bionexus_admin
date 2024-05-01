@@ -201,7 +201,7 @@ class AddInventoryItem extends StatelessWidget {
                         ? "Should not be less than 3"
                         : null,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               TextFormField(
@@ -209,11 +209,12 @@ class AddInventoryItem extends StatelessWidget {
                 controller: _description,
                 decoration: InputDecoration(labelText: "Description"),
                 maxLines: null,
+                minLines: 3,
                 autocorrect: true,
                 validator: (value) =>
                     value == '' ? "Should not be empty" : null,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               TextFormField(
@@ -230,7 +231,7 @@ class AddInventoryItem extends StatelessWidget {
                 ],
                 decoration: InputDecoration(labelText: "Price"),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               ElevatedButton(

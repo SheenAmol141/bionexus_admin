@@ -1,7 +1,5 @@
 // ignore_for_file: avoid_unnecessary_containers, prefer_const_literals_to_create_immutables, prefer_const_constructors
 
-import 'dart:js_interop';
-
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/hex_color.dart';
 import 'package:bionexus_admin/templates.dart';

@@ -210,6 +210,21 @@ class TransactionItem {
   }
 }
 
+class PatientInQueue {
+  String _name;
+  String _reason;
+  DateTime _time;
+  PatientInQueue(
+      {required String name, required String reason, required Timestamp time})
+      : _name = name,
+        _reason = reason,
+        _time = time.toDate();
+
+  String get reason => _reason;
+  String get name => _name;
+  DateTime get time => _time;
+}
+
 class Birthdate {
   final DateTime _birthDate;
 
