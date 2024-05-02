@@ -225,6 +225,29 @@ class PatientInQueue {
   DateTime get time => _time;
 }
 
+class LabSpecimenRequest {
+  String _name;
+  String _requestedLab;
+  DateTime _time;
+  bool _allDone = false;
+  LabSpecimenRequest(
+      {required String name,
+      required String requestedLab,
+      required Timestamp time})
+      : _name = name,
+        _requestedLab = requestedLab,
+        _time = time.toDate();
+
+  setAllDone() {
+    _allDone = true;
+  }
+
+  String get reason => _requestedLab;
+  String get name => _name;
+  DateTime get time => _time;
+  bool get allDone => _allDone;
+}
+
 class Birthdate {
   final DateTime _birthDate;
 

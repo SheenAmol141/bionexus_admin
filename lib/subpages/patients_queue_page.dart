@@ -153,12 +153,12 @@ class _PatientsQueuePageState extends State<PatientsQueuePage> {
                                           ),
                                           Expanded(child: Container()),
                                           Text(
-                                            "${DateFormat.jm().format(_queue[index].time)}",
+                                            "${DateFormat("MMMM dd, yyyy").format(_queue[index].time)} ${DateFormat.jm().format(_queue[index].time)}",
                                           ),
                                         ],
                                       ),
-                                      Divider(),
-                                      SizedBox(
+                                      const Divider(),
+                                      const SizedBox(
                                         height: 10,
                                       ),
                                       ElevatedButton(

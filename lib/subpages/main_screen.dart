@@ -2,6 +2,7 @@
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/add_team.dart';
 import 'package:bionexus_admin/subpages/inventory_page.dart';
+import 'package:bionexus_admin/subpages/lab_pages/lab_specimen_requests_page.dart';
 import 'package:bionexus_admin/subpages/patient_records/patient_records_page.dart';
 import 'package:bionexus_admin/subpages/patients_queue_page.dart';
 import 'package:bionexus_admin/subpages/services_page.dart';
@@ -585,11 +586,14 @@ class _ClientContentState extends State<ClientContent> {
                                             teamCode: userData["team-license"])
                                         : currentPage == "Medical Services"
                                             ? MedicalServicesPage()
-                                            : Container(
-                                                child: Center(
-                                                  child: Text("WIP"),
-                                                ),
-                                              ))
+                                            : currentPage ==
+                                                    "Lab Specimen Requests"
+                                                ? LabSpecimenRequestsPage()
+                                                : Container(
+                                                    child: Center(
+                                                      child: Text("WIP"),
+                                                    ),
+                                                  ))
             : Scaffold(
                 body: Center(
                   child: CircularProgressIndicator(
