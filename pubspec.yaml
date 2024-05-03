@@ -48,6 +48,9 @@ dependencies:
   intl: ^0.18.1
   timeago_flutter: ^3.6.0
 
+  firebase_storage: ^11.7.4
+  file_picker: ^8.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bionexus_admin/subpages/add_team.dart';
 import 'package:bionexus_admin/subpages/main_screen.dart';
@@ -19,14 +20,19 @@ Future<bool> doesAdminExist(String email) async {
   }
 }
 
-void createTeam(context) {
+void createTeam(context, path, name) {
+  String clinicname = name;
+  String certpath = path;
   String uid = FirebaseAuth.instance.currentUser!.uid;
   String email = FirebaseAuth.instance.currentUser!.email!;
   FirebaseFirestore.instance.collection("Teams").doc(uid).set({
+    "clinic_name": clinicname,
     "root-user": email,
     "members": [email],
     "subscription_deadline": DateTime.now().add(const Duration(days: 14)),
-    "in_trial": true
+    "in_trial": true,
+    "verified": false,
+    "certificate_url": certpath
   });
   FirebaseFirestore.instance
       .collection("Users")
@@ -228,21 +234,29 @@ class PatientInQueue {
 class LabSpecimenRequest {
   String _name;
   String _requestedLab;
+  String _info;
   DateTime _time;
   bool _allDone = false;
+  bool _usePatient;
   LabSpecimenRequest(
       {required String name,
       required String requestedLab,
-      required Timestamp time})
+      required String info,
+      required bool usePatient,
+      required DateTime time})
       : _name = name,
-        _requestedLab = requestedLab,
-        _time = time.toDate();
+        _time = time,
+        _usePatient = usePatient,
+        _info = info,
+        _requestedLab = requestedLab;
 
   setAllDone() {
     _allDone = true;
   }
 
-  String get reason => _requestedLab;
+  bool get usePatient => _usePatient;
+  String get info => _info;
+  String get requestedLab => _requestedLab;
   String get name => _name;
   DateTime get time => _time;
   bool get allDone => _allDone;

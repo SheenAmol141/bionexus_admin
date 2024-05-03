@@ -77,7 +77,12 @@ class _PatientsQueuePageState extends State<PatientsQueuePage> {
           ),
         ),
         body: StreamBuilder(
-          stream: queueref.snapshots(),
+          stream: FirebaseFirestore.instance
+              .collection("Teams")
+              .doc(teamCode)
+              .collection("Queue")
+              .orderBy("time", descending: false)
+              .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Center(

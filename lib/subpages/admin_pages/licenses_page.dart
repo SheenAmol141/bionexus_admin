@@ -59,7 +59,15 @@ class _LicensesPageState extends State<LicensesPage> {
                           child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SectionTitlesTemplate(team.id),
+                          SectionTitlesTemplate(team["clinic_name"]),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Text(team.id),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Text(team["verified"] ? "Verified" : "Not Verified"),
                           SizedBox(
                             height: 20,
                           ),
@@ -139,7 +147,7 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SectionTitlesTemplate("TeamID: ${widget.teamCode}"),
+                      SectionTitlesTemplate("${team["clinic_name"]}"),
                       SizedBox(
                         height: 20,
                       ),
@@ -151,6 +159,27 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
                               "More Details",
                               style: GoogleFonts.montserrat(
                                   fontSize: 20, fontWeight: FontWeight.w600),
+                            ),
+                            Divider(),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "TeamID:",
+                                  style: GoogleFonts.montserrat(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Expanded(child: Container()),
+                                Expanded(
+                                  child: Text(
+                                    widget.teamCode,
+                                    style: GoogleFonts.montserrat(
+                                        fontWeight: FontWeight.w700),
+                                    textAlign: TextAlign.right,
+                                  ),
+                                ),
+                              ],
                             ),
                             Divider(),
                             Row(
@@ -195,10 +224,83 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
                               ],
                             ),
                             Divider(),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [],
-                            )
+                            // Image.network(team["certificate_url"])
+                            Text(
+                              "BIR Certificate of Registration:",
+                              style: GoogleFonts.montserrat(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Image(
+                              image: NetworkImage(team["certificate_url"]),
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) {
+                                  return child; // Image is loaded
+                                }
+                                return Center(
+                                    child:
+                                        CircularProgressIndicator()); // Display spinner while loading
+                              },
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            ElevatedButton(
+                                onPressed: () {
+                                  // DateTime time = DateTime.now();
+                                  // FirebaseFirestore.instance
+                                  //     .collection("Teams")
+                                  //     .doc(teamCode)
+                                  //     .update({
+                                  //   "subscription_deadline": time.add(Duration(days: 30))
+                                  // });
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text("Confirm?"),
+                                      contentPadding: EdgeInsets.all(5),
+                                      content: const Padding(
+                                        padding: EdgeInsets.all(20.0),
+                                        child: Text(
+                                            "Do you wish to add 30 Days (1 Month) to the Subscription of this team?"),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text("Cancel")),
+                                        TextButton(
+                                            onPressed: () {
+                                              FirebaseFirestore.instance
+                                                  .collection("Teams")
+                                                  .doc(widget.teamCode)
+                                                  .update({
+                                                "verified": true
+                                              }).then((value) {
+                                                Navigator.of(context).pop();
+                                              }).then((value) {
+                                                ScaffoldMessenger.of(
+                                                        widget.scafcon)
+                                                    .showSnackBar(SnackBar(
+                                                        content: Text(
+                                                            "Team is now verified!")));
+                                              });
+                                            },
+                                            child: Text(
+                                              "Confirm",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w600),
+                                            ))
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: Text("Verify this Team")),
                           ],
                         ),
                       ),

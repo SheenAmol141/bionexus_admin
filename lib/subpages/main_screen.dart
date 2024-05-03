@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/add_team.dart';
+import 'package:bionexus_admin/subpages/fitted_video.dart';
 import 'package:bionexus_admin/subpages/inventory_page.dart';
 import 'package:bionexus_admin/subpages/lab_pages/lab_specimen_requests_page.dart';
 import 'package:bionexus_admin/subpages/patient_records/patient_records_page.dart';
@@ -33,6 +34,7 @@ class _MainScreenState extends State<MainScreen> {
   bool nearSubscription = false;
   String teamCode = '';
   int daysnear = 0;
+  bool verified = false;
 
   void isItLate() {
     FirebaseFirestore.instance
@@ -47,6 +49,11 @@ class _MainScreenState extends State<MainScreen> {
           .doc(teamCode)
           .get()
           .then((value) {
+        if (value["verified"]) {
+          setState(() {
+            verified = true;
+          });
+        }
         if (value["subscription_deadline"]
                 .toDate()
                 .difference(DateTime.now())
@@ -185,7 +192,10 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           )
-                        : ClientContent(team: noTeam)
+                        : ClientContent(
+                            team: noTeam,
+                            verified: verified,
+                          )
             : Scaffold(
                 body: Center(
                   child: CircularProgressIndicator(),
@@ -195,6 +205,7 @@ class _MainScreenState extends State<MainScreen> {
             // --------------------------------------------------------------------------------------------------- loginScreen
 
             children: [
+              FittedVideo(),
               Opacity(
                 opacity: .9,
                 child: Container(
@@ -322,7 +333,8 @@ class LateSubscription extends StatelessWidget {
 // ignore: must_be_immutable
 class ClientContent extends StatefulWidget {
   bool team;
-  ClientContent({super.key, required this.team});
+  bool verified;
+  ClientContent({super.key, required this.team, required this.verified});
 
   @override
   State<ClientContent> createState() => _ClientContentState();
@@ -399,207 +411,230 @@ class _ClientContentState extends State<ClientContent> {
 
     return widget.team
         ? AddTeam()
-        : loaded
+        : !widget.verified
             ? Scaffold(
-                appBar: AppBar(
-                  centerTitle: true,
-                  title: Text(currentPage.isEmpty ? "BIONEXUS" : currentPage,
-                      style: GoogleFonts.montserrat(
-                          fontWeight: FontWeight.w600, color: Colors.white)),
-                  iconTheme: IconThemeData(color: Colors.white),
-                  backgroundColor: EMERALD,
-                ),
-                drawer: Drawer(
-                  child: ListView(
+                body: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      UserAccountsDrawerHeader(
-                        decoration: BoxDecoration(color: EMERALD),
-                        accountName: Text(
-                          'Hello ${FirebaseAuth.instance.currentUser!.displayName ?? "unnamed"}!',
-                          style: _text,
-                        ),
-                        accountEmail: Text(
-                          '${FirebaseAuth.instance.currentUser!.email}',
-                          style: _text,
-                        ),
+                      Text("Your Team is not yet Verified."),
+                      SizedBox(
+                        height: 20,
                       ),
-                      ListTile(
-                        tileColor: currentPage == "Patients Queue"
-                            ? Colors.grey.withOpacity(0.2)
-                            : null,
-                        trailing: Icon(Icons.queue_rounded),
-                        // iconColor: AERO,
-                        title: Text(
-                          "Patients Queue",
-                          style: _listText,
-                        ),
-                        onTap: (() {
-                          changePage("Patients Queue");
-                          print(currentPage);
-                          Navigator.pop(context);
-                        }),
-                      ),
-                      ListTile(
-                        tileColor: currentPage == "Patient Records"
-                            ? Colors.grey.withOpacity(0.2)
-                            : null,
-                        trailing: Icon(Icons.file_present_rounded),
-                        // iconColor: AERO,
-                        title: Text(
-                          "Patient Records",
-                          style: _listText,
-                        ),
-                        onTap: (() {
-                          changePage("Patient Records");
-                          print(currentPage);
-                          Navigator.pop(context);
-                        }),
-                      ),
-                      ListTile(
-                        tileColor: currentPage == "Inventory"
-                            ? Colors.grey.withOpacity(0.2)
-                            : null,
-                        trailing: Icon(Icons.inventory_2_rounded),
-                        // iconColor: AERO,
-                        title: Text(
-                          "Inventory",
-                          style: _listText,
-                        ),
-                        onTap: (() {
-                          changePage("Inventory");
-                          print(currentPage);
-                          Navigator.pop(context);
-                        }),
-                      ),
-                      ListTile(
-                        tileColor: currentPage == "Medical Services"
-                            ? Colors.grey.withOpacity(0.2)
-                            : null,
-                        trailing: Icon(Icons.medical_services),
-                        // iconColor: AERO,
-                        title: Text(
-                          "Medical Services",
-                          style: _listText,
-                        ),
-                        onTap: (() {
-                          changePage("Medical Services");
-                          print(currentPage);
-                          Navigator.pop(context);
-                        }),
-                      ),
-                      ListTile(
-                        tileColor: currentPage == "Lab Specimen Requests"
-                            ? Colors.grey.withOpacity(0.2)
-                            : null,
-                        trailing: Icon(Icons.science_rounded),
-                        // iconColor: AERO,
-                        title: Text(
-                          "Lab Specimen Requests",
-                          style: _listText,
-                        ),
-                        onTap: (() {
-                          changePage("Lab Specimen Requests");
-                          print(currentPage);
-                          Navigator.pop(context);
-                        }),
-                      ),
-                      ListTile(
-                        tileColor: currentPage == "Lab Records"
-                            ? Colors.grey.withOpacity(0.2)
-                            : null,
-                        trailing: Icon(Icons.query_stats_rounded),
-                        // iconColor: AERO,
-                        title: Text(
-                          "Lab Records",
-                          style: _listText,
-                        ),
-                        onTap: (() {
-                          changePage("Lab Records");
-                          print(currentPage);
-                          Navigator.pop(context);
-                        }),
-                      ),
-                      ListTile(
-                        tileColor: currentPage == "TPS"
-                            ? Colors.grey.withOpacity(0.2)
-                            : null,
-                        trailing: Icon(Icons.receipt_long_outlined),
-                        // iconColor: AERO,
-                        title: Text(
-                          "TPS",
-                          style: _listText,
-                        ),
-                        onTap: (() {
-                          changePage("TPS");
-                          print(currentPage);
-                          Navigator.pop(context);
-                        }),
-                      ),
-                      Divider(),
-                      ListTile(
-                        tileColor: currentPage == "Settings"
-                            ? Colors.grey.withOpacity(0.3)
-                            : null,
-                        trailing: Icon(Icons.settings),
-                        // iconColor: AERO,
-                        title: Text(
-                          "Settings",
-                          style: _listText,
-                        ),
-                        onTap: (() {
-                          setState(() {
-                            currentPage = "Settings";
-                          });
-                          print(currentPage);
-                          Navigator.pop(context);
-                        }),
-                      ),
-                      ListTile(
-                        trailing: Icon(Icons.exit_to_app),
-                        // iconColor: AERO,
-                        title: Text(
-                          "Log Out",
-                          style: _listText,
-                        ),
-
-                        onTap: () {
-                          logout(context);
-                        },
-                      ),
+                      ElevatedButton(
+                          onPressed: () {
+                            logout(context);
+                          },
+                          child: Text("logout"))
                     ],
                   ),
                 ),
-                body: currentPage.isEmpty
-                    ? Center(
-                        child: Text("Welcome to Bionexus"),
-                      )
-                    : currentPage == "Settings"
-                        ? SettingsPage()
-                        : currentPage == "Patients Queue"
-                            ? PatientsQueuePage()
-                            : currentPage == "Inventory"
-                                ? InventoryPage()
-                                : currentPage == "TPS"
-                                    ? TPS(teamCode: userData["team-license"])
-                                    : currentPage == "Patient Records"
-                                        ? PatientRecordsPage(
+              )
+            : loaded
+                ? Scaffold(
+                    appBar: AppBar(
+                      centerTitle: true,
+                      title: Text(
+                          currentPage.isEmpty ? "BIONEXUS" : currentPage,
+                          style: GoogleFonts.montserrat(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white)),
+                      iconTheme: IconThemeData(color: Colors.white),
+                      backgroundColor: EMERALD,
+                    ),
+                    drawer: Drawer(
+                      child: ListView(
+                        children: [
+                          UserAccountsDrawerHeader(
+                            decoration: BoxDecoration(color: EMERALD),
+                            accountName: Text(
+                              'Hello ${FirebaseAuth.instance.currentUser!.displayName ?? "unnamed"}!',
+                              style: _text,
+                            ),
+                            accountEmail: Text(
+                              '${FirebaseAuth.instance.currentUser!.email}',
+                              style: _text,
+                            ),
+                          ),
+                          ListTile(
+                            tileColor: currentPage == "Patients Queue"
+                                ? Colors.grey.withOpacity(0.2)
+                                : null,
+                            trailing: Icon(Icons.queue_rounded),
+                            // iconColor: AERO,
+                            title: Text(
+                              "Patients Queue",
+                              style: _listText,
+                            ),
+                            onTap: (() {
+                              changePage("Patients Queue");
+                              print(currentPage);
+                              Navigator.pop(context);
+                            }),
+                          ),
+                          ListTile(
+                            tileColor: currentPage == "Patient Records"
+                                ? Colors.grey.withOpacity(0.2)
+                                : null,
+                            trailing: Icon(Icons.file_present_rounded),
+                            // iconColor: AERO,
+                            title: Text(
+                              "Patient Records",
+                              style: _listText,
+                            ),
+                            onTap: (() {
+                              changePage("Patient Records");
+                              print(currentPage);
+                              Navigator.pop(context);
+                            }),
+                          ),
+                          ListTile(
+                            tileColor: currentPage == "Inventory"
+                                ? Colors.grey.withOpacity(0.2)
+                                : null,
+                            trailing: Icon(Icons.inventory_2_rounded),
+                            // iconColor: AERO,
+                            title: Text(
+                              "Inventory",
+                              style: _listText,
+                            ),
+                            onTap: (() {
+                              changePage("Inventory");
+                              print(currentPage);
+                              Navigator.pop(context);
+                            }),
+                          ),
+                          ListTile(
+                            tileColor: currentPage == "Medical Services"
+                                ? Colors.grey.withOpacity(0.2)
+                                : null,
+                            trailing: Icon(Icons.medical_services),
+                            // iconColor: AERO,
+                            title: Text(
+                              "Medical Services",
+                              style: _listText,
+                            ),
+                            onTap: (() {
+                              changePage("Medical Services");
+                              print(currentPage);
+                              Navigator.pop(context);
+                            }),
+                          ),
+                          ListTile(
+                            tileColor: currentPage == "Lab Specimen Requests"
+                                ? Colors.grey.withOpacity(0.2)
+                                : null,
+                            trailing: Icon(Icons.science_rounded),
+                            // iconColor: AERO,
+                            title: Text(
+                              "Lab Specimen Requests",
+                              style: _listText,
+                            ),
+                            onTap: (() {
+                              changePage("Lab Specimen Requests");
+                              print(currentPage);
+                              Navigator.pop(context);
+                            }),
+                          ),
+                          ListTile(
+                            tileColor: currentPage == "Lab Records"
+                                ? Colors.grey.withOpacity(0.2)
+                                : null,
+                            trailing: Icon(Icons.query_stats_rounded),
+                            // iconColor: AERO,
+                            title: Text(
+                              "Lab Records",
+                              style: _listText,
+                            ),
+                            onTap: (() {
+                              changePage("Lab Records");
+                              print(currentPage);
+                              Navigator.pop(context);
+                            }),
+                          ),
+                          ListTile(
+                            tileColor: currentPage == "TPS"
+                                ? Colors.grey.withOpacity(0.2)
+                                : null,
+                            trailing: Icon(Icons.receipt_long_outlined),
+                            // iconColor: AERO,
+                            title: Text(
+                              "TPS",
+                              style: _listText,
+                            ),
+                            onTap: (() {
+                              changePage("TPS");
+                              print(currentPage);
+                              Navigator.pop(context);
+                            }),
+                          ),
+                          Divider(),
+                          ListTile(
+                            tileColor: currentPage == "Settings"
+                                ? Colors.grey.withOpacity(0.3)
+                                : null,
+                            trailing: Icon(Icons.settings),
+                            // iconColor: AERO,
+                            title: Text(
+                              "Settings",
+                              style: _listText,
+                            ),
+                            onTap: (() {
+                              setState(() {
+                                currentPage = "Settings";
+                              });
+                              print(currentPage);
+                              Navigator.pop(context);
+                            }),
+                          ),
+                          ListTile(
+                            trailing: Icon(Icons.exit_to_app),
+                            // iconColor: AERO,
+                            title: Text(
+                              "Log Out",
+                              style: _listText,
+                            ),
+
+                            onTap: () {
+                              logout(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    body: currentPage.isEmpty
+                        ? Center(
+                            child: Text("Welcome to Bionexus"),
+                          )
+                        : currentPage == "Settings"
+                            ? SettingsPage()
+                            : currentPage == "Patients Queue"
+                                ? PatientsQueuePage()
+                                : currentPage == "Inventory"
+                                    ? InventoryPage()
+                                    : currentPage == "TPS"
+                                        ? TPS(
                                             teamCode: userData["team-license"])
-                                        : currentPage == "Medical Services"
-                                            ? MedicalServicesPage()
-                                            : currentPage ==
-                                                    "Lab Specimen Requests"
-                                                ? LabSpecimenRequestsPage()
-                                                : Container(
-                                                    child: Center(
-                                                      child: Text("WIP"),
-                                                    ),
-                                                  ))
-            : Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(
-                    color: AERO,
-                  ),
-                ),
-              );
+                                        : currentPage == "Patient Records"
+                                            ? PatientRecordsPage(
+                                                teamCode:
+                                                    userData["team-license"])
+                                            : currentPage == "Medical Services"
+                                                ? MedicalServicesPage()
+                                                : currentPage ==
+                                                        "Lab Specimen Requests"
+                                                    ? LabSpecimenRequestsPage()
+                                                    : Container(
+                                                        child: Center(
+                                                          child: Text("WIP"),
+                                                        ),
+                                                      ))
+                : Scaffold(
+                    body: Center(
+                      child: CircularProgressIndicator(
+                        color: AERO,
+                      ),
+                    ),
+                  );
   }
 }

@@ -35,6 +35,7 @@ class _AllTransactionsState extends State<AllTransactions> {
             .collection("Teams")
             .doc(widget.teamCode)
             .collection("Transactions")
+            .orderBy("time_of_transaction", descending: false)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
