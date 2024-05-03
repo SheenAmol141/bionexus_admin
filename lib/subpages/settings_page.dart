@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+
+String teamCode = '';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -53,8 +56,10 @@ class _SettingsPageState extends State<SettingsPage> {
             .collection("Users")
             .doc(email)
             .get()
-            .then((value) => team = value["team-license"])
             .then((value) {
+          team = value["team-license"];
+          teamCode = value["team-license"];
+        }).then((value) {
           FirebaseFirestore.instance
               .collection("Teams")
               .doc(team)
@@ -91,9 +96,99 @@ class _SettingsPageState extends State<SettingsPage> {
               // Change team card
               TeamCard(teamID: teamID, root: root),
               Container(child: root ? ManageTeamMembersCard() : null),
+              RateCard()
             ],
           ),
         ));
+  }
+}
+
+class RateCard extends StatelessWidget {
+  double rate = 3;
+  final key = GlobalKey<FormState>();
+  final controller = TextEditingController();
+  RateCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CardTemplate(
+        child: Column(
+      children: [
+        SectionTitlesTemplate("Care to rate our Service?"),
+        Form(
+            key: key,
+            child: Column(
+              children: [
+                RatingBar.builder(
+                  initialRating: 3,
+                  minRating: 1,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder: (context, _) => Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                  onRatingUpdate: (rating) {
+                    rate = rating;
+                  },
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  maxLines: null,
+                  minLines: 3,
+                  controller: controller,
+                  decoration: InputDecoration(label: Text("Description")),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Name must not be empty!";
+                    } else if (value.length < 3) {
+                      return "Name must not be less than 3 characters!";
+                    }
+                  },
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                ElevatedButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text("Upload Rating?"),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text("Cancel")),
+                              TextButton(
+                                  onPressed: () {
+                                    FirebaseFirestore.instance
+                                        .collection("Teams")
+                                        .doc(teamCode)
+                                        .update({
+                                      "rating_num": rate,
+                                      "rating_desc": controller.text,
+                                      "rated": true
+                                    });
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text("Confirm"))
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: Text("Upload Rating"))
+              ],
+            )),
+      ],
+    ));
   }
 }
 
