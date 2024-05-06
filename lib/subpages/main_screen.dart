@@ -3,6 +3,7 @@ import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/subpages/add_team.dart';
 import 'package:bionexus_admin/subpages/fitted_video.dart';
 import 'package:bionexus_admin/subpages/inventory_page.dart';
+import 'package:bionexus_admin/subpages/lab_pages/lab_records_page.dart';
 import 'package:bionexus_admin/subpages/lab_pages/lab_specimen_requests_page.dart';
 import 'package:bionexus_admin/subpages/onboarding_screen.dart';
 import 'package:bionexus_admin/subpages/patient_records/patient_records_page.dart';
@@ -14,6 +15,7 @@ import 'package:bionexus_admin/templates.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:bionexus_admin/hex_color.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -37,6 +39,7 @@ class _MainScreenState extends State<MainScreen> {
   int daysnear = 0;
   bool verified = false;
 
+  String clinic = '';
   void isItLate() {
     FirebaseFirestore.instance
         .collection("Users")
@@ -53,6 +56,7 @@ class _MainScreenState extends State<MainScreen> {
         if (value["verified"]) {
           setState(() {
             verified = true;
+            clinic = value["clinic_name"];
           });
         }
         if (value["subscription_deadline"]
@@ -196,6 +200,7 @@ class _MainScreenState extends State<MainScreen> {
                         : ClientContent(
                             team: noTeam,
                             verified: verified,
+                            clinic: clinic,
                           )
             : Scaffold(
                 body: Center(
@@ -218,116 +223,132 @@ class _MainScreenState extends State<MainScreen> {
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    children: [
-                      SizedBox(
-                        height: 100,
-                      ),
-                      SizedBox(
-                          width: 420,
-                          child: Image.asset("assets/bionexuslogo.png")),
-                      SizedBox(
-                        height: 100,
-                      ),
-                    ],
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // SizedBox(
+                        //   height: 100,
+                        // ),
+                        SizedBox(
+                            width: 420,
+                            child: Image.asset("assets/bionexuslogo.png")),
+                        // SizedBox(
+                        //   height: 100,
+                        // ),
+                      ],
+                    ),
                   ),
                   Expanded(
+                    flex: 2,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          padding: EdgeInsets.all(15),
-                          decoration: const BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(30),
-                                  topRight: Radius.circular(30))),
-                          height: 500,
-                          width: MediaQuery.of(context).size.width,
-                          child: SignInScreen(providers: [
-                            EmailAuthProvider(),
-                          ], actions: [
-                            AuthStateChangeAction<UserCreated>(
-                                (context, state) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content:
-                                          Text("Account created successfully"),
-                                      duration: Duration(milliseconds: 500)));
-                              isitAdmin();
-                              isitinTeam();
-                              FirebaseFirestore.instance
-                                  .collection("Users")
-                                  .doc(FirebaseAuth.instance.currentUser!.email)
-                                  .set({
-                                "uid": FirebaseAuth.instance.currentUser!.uid,
-                                "team-license": null,
-                                "email":
-                                    FirebaseAuth.instance.currentUser!.email,
-                                "Inventory": false,
-                                "Patient Records": false,
-                                "Patients Queue": false,
-                                "TPS": false,
-                                "Medical Services": false,
-                                "Lab Records": false,
-                                "Lab Specimen Requests": false,
-                              });
-                            }),
-                            AuthStateChangeAction<SignedIn>((context, state) {
-                              isitAdmin();
-                              isitinTeam();
-                            })
-                          ]),
-                        ),
                         Expanded(
                           child: Container(
-                            width: double.infinity,
-                            color: Colors.white,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 400,
-                                  child: OutlinedButton(
-                                      style: ButtonStyle(
-                                        backgroundColor:
-                                            MaterialStatePropertyAll(AERO),
-                                        shape: MaterialStatePropertyAll(
-                                            RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(4))),
-                                        side: MaterialStateProperty.all(
-                                            BorderSide(
+                            padding: EdgeInsets.all(15),
+                            decoration: const BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(30),
+                                    topRight: Radius.circular(30))),
+                            width: MediaQuery.of(context).size.width,
+                            height: 400,
+                            child: SignInScreen(providers: [
+                              EmailAuthProvider(),
+                            ], actions: [
+                              AuthStateChangeAction<UserCreated>(
+                                  (context, state) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            "Account created successfully"),
+                                        duration: Duration(milliseconds: 500)));
+                                isitAdmin();
+                                isitinTeam();
+                                FirebaseFirestore.instance
+                                    .collection("Users")
+                                    .doc(FirebaseAuth
+                                        .instance.currentUser!.email)
+                                    .set({
+                                  "uid": FirebaseAuth.instance.currentUser!.uid,
+                                  "team-license": null,
+                                  "email":
+                                      FirebaseAuth.instance.currentUser!.email,
+                                  "Inventory": false,
+                                  "Patient Records": false,
+                                  "Patients Queue": false,
+                                  "TPS": false,
+                                  "Medical Services": false,
+                                  "Lab Records": false,
+                                  "Lab Specimen Requests": false,
+                                });
+                              }),
+                              AuthStateChangeAction<SignedIn>((context, state) {
+                                isitAdmin();
+                                isitinTeam();
+                              })
+                            ]),
+                          ),
+                        ),
+                        Container(
+                          color: Colors.grey[350],
+                          height: 1,
+                        ),
+                        Container(
+                          width: double.infinity,
+                          color: Colors.white,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Container(
+                                width: 400,
+                                child: OutlinedButton(
+                                    style: ButtonStyle(
+                                      backgroundColor:
+                                          MaterialStatePropertyAll(AERO),
+                                      shape: MaterialStatePropertyAll(
+                                          RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(4))),
+                                      side: MaterialStateProperty.all(
+                                          BorderSide(
+                                              color: Colors.white,
+                                              width: 2,
+                                              style: BorderStyle.solid)),
+                                      padding: MaterialStatePropertyAll(
+                                          EdgeInsets.symmetric(
+                                              horizontal: 40, vertical: 20)),
+                                    ),
+                                    onPressed: () async {
+                                      Navigator.of(context).pushReplacement(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  LandingPage()));
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text("Learn more about BioNexus",
+                                            style: TextStyle(
                                                 color: Colors.white,
-                                                width: 2,
-                                                style: BorderStyle.solid)),
-                                        padding: MaterialStatePropertyAll(
-                                            EdgeInsets.symmetric(
-                                                horizontal: 40, vertical: 20)),
-                                      ),
-                                      onPressed: () async {
-                                        Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    LandingPage()));
-                                      },
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text("Learn more about BioNexus",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 15,
-                                                  letterSpacing: 1,
-                                                  fontFamily: "montserrat",
-                                                  fontWeight: FontWeight.bold)),
-                                        ],
-                                      )),
-                                ),
-                              ],
-                            ),
+                                                fontSize: 15,
+                                                letterSpacing: 1,
+                                                fontFamily: "montserrat",
+                                                fontWeight: FontWeight.bold)),
+                                      ],
+                                    )),
+                              ),
+                              SizedBox(
+                                height: 20,
+                              )
+                            ],
                           ),
                         ),
                       ],
@@ -395,7 +416,12 @@ class LateSubscription extends StatelessWidget {
 class ClientContent extends StatefulWidget {
   bool team;
   bool verified;
-  ClientContent({super.key, required this.team, required this.verified});
+  String clinic;
+  ClientContent(
+      {super.key,
+      required this.team,
+      required this.verified,
+      required this.clinic});
 
   @override
   State<ClientContent> createState() => _ClientContentState();
@@ -509,7 +535,7 @@ class _ClientContentState extends State<ClientContent> {
                           UserAccountsDrawerHeader(
                             decoration: BoxDecoration(color: EMERALD),
                             accountName: Text(
-                              'Hello ${FirebaseAuth.instance.currentUser!.displayName ?? "unnamed"}!',
+                              widget.clinic,
                               style: _text,
                             ),
                             accountEmail: Text(
@@ -671,25 +697,30 @@ class _ClientContentState extends State<ClientContent> {
                             ? SettingsPage()
                             : currentPage == "Patients Queue"
                                 ? PatientsQueuePage()
-                                : currentPage == "Inventory"
-                                    ? InventoryPage()
-                                    : currentPage == "TPS"
-                                        ? TPS(
-                                            teamCode: userData["team-license"])
-                                        : currentPage == "Patient Records"
-                                            ? PatientRecordsPage(
+                                : currentPage == "Lab Records"
+                                    ? LabRecordsPage()
+                                    : currentPage == "Inventory"
+                                        ? InventoryPage()
+                                        : currentPage == "TPS"
+                                            ? TPS(
                                                 teamCode:
                                                     userData["team-license"])
-                                            : currentPage == "Medical Services"
-                                                ? MedicalServicesPage()
+                                            : currentPage == "Patient Records"
+                                                ? PatientRecordsPage(
+                                                    teamCode: userData[
+                                                        "team-license"])
                                                 : currentPage ==
-                                                        "Lab Specimen Requests"
-                                                    ? LabSpecimenRequestsPage()
-                                                    : Container(
-                                                        child: Center(
-                                                          child: Text("WIP"),
-                                                        ),
-                                                      ))
+                                                        "Medical Services"
+                                                    ? MedicalServicesPage()
+                                                    : currentPage ==
+                                                            "Lab Specimen Requests"
+                                                        ? LabSpecimenRequestsPage()
+                                                        : Container(
+                                                            child: Center(
+                                                              child:
+                                                                  Text("WIP"),
+                                                            ),
+                                                          ))
                 : Scaffold(
                     body: Center(
                       child: CircularProgressIndicator(

@@ -182,20 +182,21 @@ class _ValidatePageState extends State<ValidatePage> {
   Widget build(BuildContext context) {
     final key = GlobalKey<FormState>();
     final controller = TextEditingController();
-    return Material(
-      child: Scaffold(
-        appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.white),
-          centerTitle: true,
-          backgroundColor: EMERALD,
-          title: Text(
-            "TEAM",
-            style: GoogleFonts.montserrat(
-                color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
+        centerTitle: true,
+        backgroundColor: EMERALD,
+        title: Text(
+          "TEAM",
+          style: GoogleFonts.montserrat(
+              color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
         ),
-        body: Center(
-          child: SingleChildScrollView(
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -257,10 +258,12 @@ class _ValidatePageState extends State<ValidatePage> {
                       },
                       icon: Icon(
                         Icons.upload_rounded,
-                        color: AERO,
                       ),
-                      label: Text("Upload File",
-                          style: GoogleFonts.montserrat(color: AERO))),
+                      label: Text(
+                        certfile != null
+                            ? "Change Certificate"
+                            : "Upload Certificate",
+                      )),
                   SizedBox(
                     height: 20,
                   ),
@@ -270,6 +273,9 @@ class _ValidatePageState extends State<ValidatePage> {
                             kIsWeb
                                 ? Image.memory(certfile!.bytes!)
                                 : Image.file(File(certfile!.path!)),
+                            SizedBox(
+                              height: 20,
+                            ),
                             ElevatedButton(
                                 onPressed: () async {
                                   if (key.currentState!.validate()) {

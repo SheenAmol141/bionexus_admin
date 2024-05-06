@@ -114,12 +114,18 @@ class OnboardingScreen extends StatelessWidget {
                             builder: (context) => MaterialApp(
                                 theme: ThemeData(
                                   appBarTheme: AppBarTheme(
-                                    centerTitle: true,
-                                    titleTextStyle: TextStyle(
-                                        color: Colors.white,
-                                        fontFamily: "montserrat",
-                                        fontWeight: FontWeight.bold),
-                                  ),
+                                      centerTitle: true,
+                                      titleTextStyle: GoogleFonts.montserrat(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600)
+                                      // TextStyle(
+
+                                      // color: Colors.white,
+                                      // fontFamily: "montserrat",
+                                      // fontWeight: FontWeight.bold
+                                      // ),
+                                      ),
                                   colorScheme: ThemeData()
                                       .colorScheme
                                       .copyWith(primary: AERO),

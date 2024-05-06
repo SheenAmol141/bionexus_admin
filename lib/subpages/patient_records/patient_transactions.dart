@@ -60,7 +60,7 @@ class _PatientAllTransactionsState extends State<PatientAllTransactions> {
                 if (docs.isEmpty) {
                   return Container(
                     child: Center(
-                      child: Text("No transactions found"),
+                      child: Text("No Transactions found"),
                     ),
                   );
                 } else {

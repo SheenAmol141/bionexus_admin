@@ -72,13 +72,16 @@ class _LabSpecimenRequestsPageState extends State<LabSpecimenRequestsPage> {
                         .collection("Teams")
                         .doc(teamCode)
                         .collection("Lab Specimen Requests")
+                        .orderBy("time")
                         .snapshots(),
                     builder: (context, snapshot) {
                       try {
                         List<DocumentSnapshot> docs = [];
                         for (DocumentSnapshot doc
                             in snapshot.data!.docs.reversed.toList()) {
-                          docs.add(doc);
+                          if (!doc["all_done"]) {
+                            docs.add(doc);
+                          }
                         }
 
                         return SingleChildScrollView(
@@ -150,7 +153,29 @@ class _LabSpecimenRequestsPageState extends State<LabSpecimenRequestsPage> {
                                               },
                                             ));
                                           },
-                                          child: Text("View Request Details"))
+                                          child: Text("View Request Details")),
+                                      SizedBox(
+                                        height: 20,
+                                      ),
+                                      ElevatedButton(
+                                          onPressed: () {
+                                            FirebaseFirestore.instance
+                                                .collection("Teams")
+                                                .doc(teamCode)
+                                                .collection(
+                                                    "Lab Specimen Requests")
+                                                .doc(currentdoc.id)
+                                                .update({
+                                              'all_done': true
+                                            }).then((value) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(SnackBar(
+                                                      content: Text(
+                                                          "Request marked as Fullfilled!")));
+                                            });
+                                          },
+                                          child: Text(
+                                              "Mark Request as Fullfilled")),
                                     ],
                                   ));
                                 },
@@ -423,7 +448,7 @@ class _AddSpecimenRequestsPageState extends State<AddSpecimenRequestsPage> {
                                         "requested_lab": request.requestedLab,
                                         "info": request.info,
                                         "use_patient": request.usePatient,
-                                        "all_done": request.allDone,
+                                        "all_done": false,
                                         "time": request.time,
                                       }).then((value) {
                                         Navigator.pop(context);
@@ -569,6 +594,73 @@ class RequestDetailsPage extends StatelessWidget {
               SizedBox(
                 height: 20,
               ),
+              StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("Teams")
+                    .doc(teamCode)
+                    .collection("Lab Specimen Requests")
+                    .doc(currentDoc.id)
+                    .collection("Specimens")
+                    .orderBy("time")
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    print("nodata");
+                    return Container(
+                      child: Center(
+                        child: CircularProgressIndicator(color: AERO),
+                      ),
+                    );
+                  } else {
+                    print("ye");
+                    List<SingleRequest> requests = [];
+                    for (DocumentSnapshot doc
+                        in snapshot.data!.docs.reversed.toList()) {
+                      requests.add(SingleRequest(
+                          doc["download_url"], doc["name"], doc["time"]));
+                    }
+                    return Column(
+                      children: [
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          separatorBuilder: (context, index) => SizedBox(
+                            height: 20,
+                          ),
+                          itemBuilder: (context, index) {
+                            return CardTemplate(
+                                child: Column(
+                              children: [
+                                SectionTitlesTemplate(requests[index].name),
+                                Divider(),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Time Added:",
+                                      ),
+                                      Text(
+                                        requests[index].time,
+                                        style: GoogleFonts.montserrat(
+                                            fontWeight: FontWeight.w600),
+                                      )
+                                    ]),
+                                Divider(),
+                                Image.network(requests[index].download)
+                              ],
+                            ));
+                          },
+                          itemCount: requests.length,
+                        ),
+                        SizedBox(
+                          height: 20,
+                        )
+                      ],
+                    );
+                  }
+                },
+              ),
               ElevatedButton(
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(
@@ -581,7 +673,7 @@ class RequestDetailsPage extends StatelessWidget {
                       },
                     ));
                   },
-                  child: Text("data"))
+                  child: Text("Upload Specimen Document"))
             ],
           ),
         ),

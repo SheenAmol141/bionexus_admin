@@ -285,3 +285,17 @@ class Birthdate {
     return age;
   }
 }
+
+class SingleRequest {
+  String _download, _name;
+  Timestamp _time;
+  SingleRequest(String download, String name, Timestamp time)
+      : _download = download,
+        _time = time,
+        _name = name;
+
+  String get download => _download;
+  String get name => _name;
+  String get time =>
+      "${DateFormat("MMMM dd, yyyy").format(_time.toDate())} - ${DateFormat.jm().format(_time.toDate())}";
+}

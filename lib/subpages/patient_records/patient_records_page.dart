@@ -1,8 +1,10 @@
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/hex_color.dart';
+import 'package:bionexus_admin/subpages/lab_pages/lab_specimen_requests_page.dart';
 import 'package:bionexus_admin/subpages/tps_pages/all_transactions_tab.dart';
 import 'package:bionexus_admin/templates.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -10,6 +12,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:bionexus_admin/subpages/patient_records/patient_transactions.dart'
     hide ReceiptDetailsPage;
+
+String patientname = '';
 
 class PatientRecordsPage extends StatelessWidget {
   final String teamCode;
@@ -364,6 +368,7 @@ class MoreAboutPage extends StatefulWidget {
 }
 
 class _MoreAboutPageState extends State<MoreAboutPage> {
+  String patname = '';
   bool notransac = false;
 
   void initnotransac() {
@@ -390,6 +395,7 @@ class _MoreAboutPageState extends State<MoreAboutPage> {
       return timestamp.toDate();
     }
 
+    patientname = widget.docSnapshot["name"];
     Birthdate bday =
         Birthdate(timestampToDateTime(widget.docSnapshot["birthdate"]));
 
@@ -699,6 +705,8 @@ class _MoreAboutPageState extends State<MoreAboutPage> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor: MaterialStatePropertyAll(EMERALD)),
                       onPressed: () {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => PatientAllTransactions(context,
@@ -706,13 +714,300 @@ class _MoreAboutPageState extends State<MoreAboutPage> {
                               name: widget.docSnapshot["name"]),
                         ));
                       },
-                      child: Text("View All Transactions.")),
+                      child: Text("View All Transactions")),
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: const SectionTitlesTemplate(
+                  "Most Recent Lab Specimen Request"),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection("Teams")
+                        .doc(widget.teamCode)
+                        .collection("Lab Specimen Requests")
+                        .where("name", isEqualTo: patientname)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Text("no data");
+                      } else {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(
+                            child: CircularProgressIndicator(color: AERO),
+                          );
+                        } else {
+                          if (snapshot.data!.docs.toList().isNotEmpty) {
+                            DocumentSnapshot first =
+                                snapshot.data!.docs.reversed.toList().first;
+                            LabSpecimenRequest currentreq = LabSpecimenRequest(
+                                name: first["name"],
+                                requestedLab: first["requested_lab"],
+                                info: first["info"],
+                                usePatient: first["use_patient"],
+                                time: first["time"].toDate());
+                            return CardTemplate(
+                                child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                SectionTitlesTemplate(currentreq.name),
+                                Divider(),
+                                Text("Requested Documents"),
+                                Text(
+                                  currentreq.requestedLab,
+                                  style: GoogleFonts.montserrat(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 17),
+                                ),
+                                Divider(),
+                                Text("Time Requested"),
+                                Text(
+                                  "${DateFormat("MMMM dd, yyyy").format(currentreq.time)} - ${DateFormat.jm().format(currentreq.time)}",
+                                  style: GoogleFonts.montserrat(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 17),
+                                ),
+                                Divider(),
+                                Container(
+                                  child: currentreq.info.isNotEmpty
+                                      ? Column(
+                                          children: [
+                                            Text("Additional Info"),
+                                            Text(
+                                              currentreq.info,
+                                              style: GoogleFonts.montserrat(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 17),
+                                            ),
+                                            Divider(),
+                                          ],
+                                        )
+                                      : null,
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                        builder: (context) {
+                                          return RequestDetailsPage(
+                                              currentDoc: first,
+                                              teamCode: widget.teamCode);
+                                        },
+                                      ));
+                                    },
+                                    child: Text("View Request Details")),
+                              ],
+                            ));
+                          } else {
+                            return CardTemplate(
+                                child: Text("No Lab Specimen Requests"));
+                          }
+                        }
+                      }
+                    },
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor: MaterialStatePropertyAll(EMERALD)),
+                      onPressed: () =>
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => PatientLabRecordsPage(
+                                widget.docSnapshot["name"]),
+                          )),
+                      child: Text("View All Requests"))
+                ],
               ),
             )
           ],
         ),
       ),
     );
+  }
+}
+
+class PatientLabRecordsPage extends StatefulWidget {
+  String name;
+  PatientLabRecordsPage(this.name, {super.key});
+
+  @override
+  State<PatientLabRecordsPage> createState() => _PatientLabRecordsPageState();
+}
+
+class _PatientLabRecordsPageState extends State<PatientLabRecordsPage> {
+  String teamCode = '';
+  bool load = false;
+  void getTeams() {
+    FirebaseFirestore.instance
+        .collection("Users")
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .get()
+        .then((value) {
+      setState(() {
+        teamCode = value["team-license"];
+        load = true;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getTeams();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          iconTheme: IconThemeData(color: Colors.white),
+          backgroundColor: EMERALD,
+          title: Text("All Requests of ${widget.name}"),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => AddSpecimenRequestsPage(
+                scafcon: context,
+                teamCode: teamCode,
+              ),
+            ));
+          },
+          child: Icon(
+            Icons.add,
+            color: Colors.white,
+          ),
+          backgroundColor: AERO,
+          hoverColor: EMERALD,
+        ),
+        backgroundColor: CupertinoColors.extraLightBackgroundGray,
+        body: Container(
+            child: load
+                ? StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection("Teams")
+                        .doc(teamCode)
+                        .collection("Lab Specimen Requests")
+                        .where("name", isEqualTo: patientname)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      try {
+                        List<DocumentSnapshot> docs = [];
+                        for (DocumentSnapshot doc
+                            in snapshot.data!.docs.reversed.toList()) {
+                          if (doc["all_done"]) {
+                            docs.add(doc);
+                          }
+                        }
+                        if (snapshot.data!.docs.toList().isNotEmpty) {
+                          return SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    DocumentSnapshot currentdoc = docs[index];
+                                    LabSpecimenRequest currentreq =
+                                        LabSpecimenRequest(
+                                            name: currentdoc["name"],
+                                            requestedLab:
+                                                currentdoc["requested_lab"],
+                                            info: currentdoc["info"],
+                                            usePatient:
+                                                currentdoc["use_patient"],
+                                            time: currentdoc["time"].toDate());
+                                    return CardTemplate(
+                                        child: Column(
+                                      children: [
+                                        SectionTitlesTemplate(currentreq.name),
+                                        Divider(),
+                                        Text("Requested Documents"),
+                                        Text(
+                                          currentreq.requestedLab,
+                                          style: GoogleFonts.montserrat(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 17),
+                                        ),
+                                        Divider(),
+                                        Text("Time Requested"),
+                                        Text(
+                                          "${DateFormat("MMMM dd, yyyy").format(currentreq.time)} - ${DateFormat.jm().format(currentreq.time)}",
+                                          style: GoogleFonts.montserrat(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 17),
+                                        ),
+                                        Divider(),
+                                        Container(
+                                          child: currentreq.info.isNotEmpty
+                                              ? Column(
+                                                  children: [
+                                                    Text("Additional Info"),
+                                                    Text(
+                                                      currentreq.info,
+                                                      style: GoogleFonts
+                                                          .montserrat(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 17),
+                                                    ),
+                                                    Divider(),
+                                                  ],
+                                                )
+                                              : null,
+                                        ),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.of(context)
+                                                  .push(MaterialPageRoute(
+                                                builder: (context) {
+                                                  return RequestDetailsPage(
+                                                      currentDoc: currentdoc,
+                                                      teamCode: teamCode);
+                                                },
+                                              ));
+                                            },
+                                            child:
+                                                Text("View Request Details")),
+                                      ],
+                                    ));
+                                  },
+                                  separatorBuilder: (context, index) =>
+                                      SizedBox(
+                                        height: 20,
+                                      ),
+                                  itemCount: docs.length),
+                            ),
+                          );
+                        } else {
+                          return Center(
+                            child: Text("No Lab Specimen Requests found"),
+                          );
+                        }
+                      } catch (e) {
+                        return Center(
+                          child: CircularProgressIndicator(color: AERO),
+                        );
+                      }
+                    },
+                  )
+                : Container()));
   }
 }

@@ -87,19 +87,28 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        color: CupertinoColors.lightBackgroundGray,
-        padding: const EdgeInsets.all(20),
+    return Scaffold(
+      backgroundColor: CupertinoColors.extraLightBackgroundGray,
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
               // Change team card
               TeamCard(teamID: teamID, root: root),
+              SizedBox(
+                height: 20,
+              ),
               Container(child: root ? ManageTeamMembersCard() : null),
+              SizedBox(
+                height: root ? 20 : 0,
+              ),
               RateCard()
             ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
 

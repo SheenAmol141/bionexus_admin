@@ -25,6 +25,7 @@ class _LicensesPageState extends State<LicensesPage> {
     super.initState();
   }
 
+  bool descending = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,70 +33,99 @@ class _LicensesPageState extends State<LicensesPage> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: StreamBuilder(
-            stream: FirebaseFirestore.instance.collection("Teams").snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return Center(
-                  child: CircularProgressIndicator(color: AERO),
-                );
-              } else {
-                List<DocumentSnapshot> teamList = [];
-                for (DocumentSnapshot doc
-                    in snapshot.data!.docs.reversed.toList()) {
-                  teamList.add(doc);
-                }
-
-                return ListView.separated(
-                    separatorBuilder: (context, index) => SizedBox(
-                          height: 20,
-                        ),
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      DocumentSnapshot team = teamList[index];
-                      print(team.id);
-                      return CardTemplate(
-                          child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SectionTitlesTemplate(team["clinic_name"]),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Text(team.id),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Text(team["verified"] ? "Verified" : "Not Verified"),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Text(team["root-user"]),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Text(
-                              "Deadline of Subscription: ${format.format(team["subscription_deadline"].toDate()).toString()}"),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => ManageSubscription(
-                                    context,
-                                    teamCode: team.id,
-                                  ),
-                                ));
-                              },
-                              child: Text("Manage Subscription"))
-                        ],
-                      ));
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Text("Verified First"),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Switch(
+                    value: descending,
+                    onChanged: (value) {
+                      setState(() {
+                        descending = value;
+                      });
                     },
-                    itemCount: teamList.length);
-              }
-            },
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("Teams")
+                    .orderBy("verified", descending: descending)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(
+                      child: CircularProgressIndicator(color: AERO),
+                    );
+                  } else {
+                    List<DocumentSnapshot> teamList = [];
+                    for (DocumentSnapshot doc
+                        in snapshot.data!.docs.reversed.toList()) {
+                      teamList.add(doc);
+                    }
+
+                    return ListView.separated(
+                        separatorBuilder: (context, index) => SizedBox(
+                              height: 20,
+                            ),
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          DocumentSnapshot team = teamList[index];
+                          print(team.id);
+                          return CardTemplate(
+                              child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SectionTitlesTemplate(team["clinic_name"]),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Text(team.id),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Text(team["verified"]
+                                  ? "Verified"
+                                  : "Not Verified"),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Text(team["root-user"]),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Text(
+                                  "Deadline of Subscription: ${format.format(team["subscription_deadline"].toDate()).toString()}"),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                      builder: (context) => ManageSubscription(
+                                        context,
+                                        teamCode: team.id,
+                                      ),
+                                    ));
+                                  },
+                                  child: Text("Manage Subscription"))
+                            ],
+                          ));
+                        },
+                        itemCount: teamList.length);
+                  }
+                },
+              ),
+            ],
           ),
         ),
       ),
