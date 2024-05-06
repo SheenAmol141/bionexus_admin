@@ -249,58 +249,61 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
                             SizedBox(
                               height: 20,
                             ),
-                            ElevatedButton(
-                                onPressed: () {
-                                  // DateTime time = DateTime.now();
-                                  // FirebaseFirestore.instance
-                                  //     .collection("Teams")
-                                  //     .doc(teamCode)
-                                  //     .update({
-                                  //   "subscription_deadline": time.add(Duration(days: 30))
-                                  // });
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: Text("Confirm?"),
-                                      contentPadding: EdgeInsets.all(5),
-                                      content: const Padding(
-                                        padding: EdgeInsets.all(20.0),
-                                        child: Text(
-                                            "Do you wish to add 30 Days (1 Month) to the Subscription of this team?"),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text("Cancel")),
-                                        TextButton(
-                                            onPressed: () {
-                                              FirebaseFirestore.instance
-                                                  .collection("Teams")
-                                                  .doc(widget.teamCode)
-                                                  .update({
-                                                "verified": true
-                                              }).then((value) {
-                                                Navigator.of(context).pop();
-                                              }).then((value) {
-                                                ScaffoldMessenger.of(
-                                                        widget.scafcon)
-                                                    .showSnackBar(SnackBar(
-                                                        content: Text(
-                                                            "Team is now verified!")));
-                                              });
-                                            },
+                            team["verified"]
+                                ? Container()
+                                : ElevatedButton(
+                                    onPressed: () {
+                                      // DateTime time = DateTime.now();
+                                      // FirebaseFirestore.instance
+                                      //     .collection("Teams")
+                                      //     .doc(teamCode)
+                                      //     .update({
+                                      //   "subscription_deadline": time.add(Duration(days: 30))
+                                      // });
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: Text("Confirm?"),
+                                          contentPadding: EdgeInsets.all(5),
+                                          content: const Padding(
+                                            padding: EdgeInsets.all(20.0),
                                             child: Text(
-                                              "Confirm",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w600),
-                                            ))
-                                      ],
-                                    ),
-                                  );
-                                },
-                                child: Text("Verify this Team")),
+                                                "Do you wish to add 30 Days (1 Month) to the Subscription of this team?"),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: Text("Cancel")),
+                                            TextButton(
+                                                onPressed: () {
+                                                  FirebaseFirestore.instance
+                                                      .collection("Teams")
+                                                      .doc(widget.teamCode)
+                                                      .update({
+                                                    "verified": true
+                                                  }).then((value) {
+                                                    Navigator.of(context).pop();
+                                                  }).then((value) {
+                                                    ScaffoldMessenger.of(
+                                                            widget.scafcon)
+                                                        .showSnackBar(SnackBar(
+                                                            content: Text(
+                                                                "Team is now verified!")));
+                                                  });
+                                                },
+                                                child: Text(
+                                                  "Confirm",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w600),
+                                                ))
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    child: Text("Verify this Team")),
                           ],
                         ),
                       ),

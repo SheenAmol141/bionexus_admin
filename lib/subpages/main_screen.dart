@@ -4,6 +4,7 @@ import 'package:bionexus_admin/subpages/add_team.dart';
 import 'package:bionexus_admin/subpages/fitted_video.dart';
 import 'package:bionexus_admin/subpages/inventory_page.dart';
 import 'package:bionexus_admin/subpages/lab_pages/lab_specimen_requests_page.dart';
+import 'package:bionexus_admin/subpages/onboarding_screen.dart';
 import 'package:bionexus_admin/subpages/patient_records/patient_records_page.dart';
 import 'package:bionexus_admin/subpages/patients_queue_page.dart';
 import 'package:bionexus_admin/subpages/services_page.dart';
@@ -231,45 +232,105 @@ class _MainScreenState extends State<MainScreen> {
                     ],
                   ),
                   Expanded(
-                    child: Container(
-                      padding: EdgeInsets.all(15),
-                      decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30))),
-                      height: 500,
-                      width: MediaQuery.of(context).size.width,
-                      child: SignInScreen(providers: [
-                        EmailAuthProvider(),
-                      ], actions: [
-                        AuthStateChangeAction<UserCreated>((context, state) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("Account created successfully"),
-                              duration: Duration(milliseconds: 500)));
-                          isitAdmin();
-                          isitinTeam();
-                          FirebaseFirestore.instance
-                              .collection("Users")
-                              .doc(FirebaseAuth.instance.currentUser!.email)
-                              .set({
-                            "uid": FirebaseAuth.instance.currentUser!.uid,
-                            "team-license": null,
-                            "email": FirebaseAuth.instance.currentUser!.email,
-                            "Inventory": false,
-                            "Patient Records": false,
-                            "Patients Queue": false,
-                            "TPS": false,
-                            "Medical Services": false,
-                            "Lab Records": false,
-                            "Lab Specimen Requests": false,
-                          });
-                        }),
-                        AuthStateChangeAction<SignedIn>((context, state) {
-                          isitAdmin();
-                          isitinTeam();
-                        })
-                      ]),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(15),
+                          decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(30),
+                                  topRight: Radius.circular(30))),
+                          height: 500,
+                          width: MediaQuery.of(context).size.width,
+                          child: SignInScreen(providers: [
+                            EmailAuthProvider(),
+                          ], actions: [
+                            AuthStateChangeAction<UserCreated>(
+                                (context, state) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content:
+                                          Text("Account created successfully"),
+                                      duration: Duration(milliseconds: 500)));
+                              isitAdmin();
+                              isitinTeam();
+                              FirebaseFirestore.instance
+                                  .collection("Users")
+                                  .doc(FirebaseAuth.instance.currentUser!.email)
+                                  .set({
+                                "uid": FirebaseAuth.instance.currentUser!.uid,
+                                "team-license": null,
+                                "email":
+                                    FirebaseAuth.instance.currentUser!.email,
+                                "Inventory": false,
+                                "Patient Records": false,
+                                "Patients Queue": false,
+                                "TPS": false,
+                                "Medical Services": false,
+                                "Lab Records": false,
+                                "Lab Specimen Requests": false,
+                              });
+                            }),
+                            AuthStateChangeAction<SignedIn>((context, state) {
+                              isitAdmin();
+                              isitinTeam();
+                            })
+                          ]),
+                        ),
+                        Expanded(
+                          child: Container(
+                            width: double.infinity,
+                            color: Colors.white,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 400,
+                                  child: OutlinedButton(
+                                      style: ButtonStyle(
+                                        backgroundColor:
+                                            MaterialStatePropertyAll(AERO),
+                                        shape: MaterialStatePropertyAll(
+                                            RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(4))),
+                                        side: MaterialStateProperty.all(
+                                            BorderSide(
+                                                color: Colors.white,
+                                                width: 2,
+                                                style: BorderStyle.solid)),
+                                        padding: MaterialStatePropertyAll(
+                                            EdgeInsets.symmetric(
+                                                horizontal: 40, vertical: 20)),
+                                      ),
+                                      onPressed: () async {
+                                        Navigator.of(context).pushReplacement(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    LandingPage()));
+                                      },
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text("Learn more about BioNexus",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 15,
+                                                  letterSpacing: 1,
+                                                  fontFamily: "montserrat",
+                                                  fontWeight: FontWeight.bold)),
+                                        ],
+                                      )),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

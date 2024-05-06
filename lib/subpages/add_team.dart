@@ -294,7 +294,11 @@ class _ValidatePageState extends State<ValidatePage> {
 
   pickFile() async {
     final result = await FilePicker.platform.pickFiles();
-    if (result == null) return;
+    if (result == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Failed to upload")));
+      return;
+    }
     final file = result.files.first;
     setState(() {
       certfile = file;

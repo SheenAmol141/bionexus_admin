@@ -32,7 +32,10 @@ void createTeam(context, path, name) {
     "subscription_deadline": DateTime.now().add(const Duration(days: 14)),
     "in_trial": true,
     "verified": false,
-    "certificate_url": certpath
+    "certificate_url": certpath,
+    "rated": false,
+    "rating_desc": '',
+    "rating_num": 5
   });
   FirebaseFirestore.instance
       .collection("Users")

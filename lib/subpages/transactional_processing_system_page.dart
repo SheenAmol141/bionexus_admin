@@ -159,6 +159,7 @@ class _NewTransactionState extends State<NewTransaction> {
           TextEditingController numOfItems = TextEditingController();
           TextEditingController customNameController = TextEditingController();
           TextEditingController customPriceController = TextEditingController();
+
           TextEditingController customNumberController =
               TextEditingController();
           TextEditingController customDescriptionController =

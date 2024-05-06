@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/hex_color.dart';
+import 'package:bionexus_admin/subpages/settings_page.dart';
 import 'package:bionexus_admin/templates.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -181,6 +187,7 @@ class AddSpecimenRequestsPage extends StatefulWidget {
 
 class _AddSpecimenRequestsPageState extends State<AddSpecimenRequestsPage> {
   bool usePatient = true;
+  bool noPatient = false;
   String currentselectedpatient = '';
 
   setfirst() {
@@ -191,7 +198,12 @@ class _AddSpecimenRequestsPageState extends State<AddSpecimenRequestsPage> {
         .get()
         .then((value) {
       setState(() {
-        currentselectedpatient = value.docs.reversed.toList().first["name"];
+        try {
+          currentselectedpatient = value.docs.reversed.toList().first["name"];
+        } catch (e) {
+          noPatient = true;
+          usePatient = false;
+        }
       });
     });
   }
@@ -235,15 +247,19 @@ class _AddSpecimenRequestsPageState extends State<AddSpecimenRequestsPage> {
                       builder: (context, setStateBox) {
                         return Row(
                           children: [
-                            Checkbox(
-                              value: usePatient,
-                              onChanged: (value) {
-                                setState(
-                                  () {
-                                    usePatient = value!;
-                                  },
-                                );
-                              },
+                            Container(
+                              child: noPatient
+                                  ? Container()
+                                  : Checkbox(
+                                      value: usePatient,
+                                      onChanged: (value) {
+                                        setState(
+                                          () {
+                                            usePatient = value!;
+                                          },
+                                        );
+                                      },
+                                    ),
                             ),
                             SizedBox(
                               width: 10,
@@ -411,6 +427,7 @@ class _AddSpecimenRequestsPageState extends State<AddSpecimenRequestsPage> {
                                         "time": request.time,
                                       }).then((value) {
                                         Navigator.pop(context);
+                                        Navigator.pop(widget.scafcon);
                                         ScaffoldMessenger.of(widget.scafcon)
                                             .showSnackBar(SnackBar(
                                                 content: Text(
@@ -463,6 +480,7 @@ class _AddSpecimenRequestsPageState extends State<AddSpecimenRequestsPage> {
                                         "time": request.time,
                                       }).then((value) {
                                         Navigator.pop(context);
+                                        Navigator.pop(widget.scafcon);
                                         ScaffoldMessenger.of(widget.scafcon)
                                             .showSnackBar(SnackBar(
                                                 content: Text(
@@ -503,11 +521,256 @@ class RequestDetailsPage extends StatelessWidget {
         usePatient: currentDoc["use_patient"],
         time: currentDoc["time"].toDate());
     return Scaffold(
+      backgroundColor: CupertinoColors.extraLightBackgroundGray,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              CardTemplate(
+                  // initial details
+                  child: Column(
+                children: [
+                  SectionTitlesTemplate(currentreq.name),
+                  Divider(),
+                  Text("Requested Documents"),
+                  Text(
+                    currentreq.requestedLab,
+                    style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w500, fontSize: 17),
+                  ),
+                  Divider(),
+                  Text("Time Requested"),
+                  Text(
+                    "${DateFormat("MMMM dd, yyyy").format(currentreq.time)} - ${DateFormat.jm().format(currentreq.time)}",
+                    style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w500, fontSize: 17),
+                  ),
+                  Divider(),
+                  Container(
+                    child: currentreq.info.isNotEmpty
+                        ? Column(
+                            children: [
+                              Text("Additional Info"),
+                              Text(
+                                currentreq.info,
+                                style: GoogleFonts.montserrat(
+                                    fontWeight: FontWeight.w500, fontSize: 17),
+                              ),
+                            ],
+                          )
+                        : null,
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                ],
+              )),
+              SizedBox(
+                height: 20,
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (context) {
+                        return AddDocumentForm(context,
+                            doc: currentDoc.id,
+                            name: currentreq.name,
+                            teamCode: teamCode,
+                            time: currentreq.time.toString());
+                      },
+                    ));
+                  },
+                  child: Text("data"))
+            ],
+          ),
+        ),
+      ),
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: EMERALD,
-        title: Text("View Request"),
+        title: const Text("View Request"),
       ),
     );
+  }
+}
+
+class AddDocumentForm extends StatefulWidget {
+  BuildContext scafcon;
+  String name;
+  String teamCode;
+  String time;
+  String doc;
+  AddDocumentForm(this.scafcon,
+      {super.key,
+      required this.doc,
+      required this.name,
+      required this.teamCode,
+      required this.time});
+
+  @override
+  State<AddDocumentForm> createState() => _AddDocumentFormState();
+}
+
+class _AddDocumentFormState extends State<AddDocumentForm> {
+  @override
+  void initState() {
+    // TODO: implement initState
+  }
+
+  PlatformFile? docimage;
+  @override
+  Widget build(BuildContext context) {
+    final key = GlobalKey<FormState>();
+    final controller = TextEditingController();
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Form(
+              key: key,
+              child: Column(
+                children: [
+                  TextFormField(
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Document name should not be empty!";
+                      } else if (value.length < 3) {
+                        return "Document name should not be less than 3 characters!";
+                      }
+                    },
+                    decoration: InputDecoration(
+                      label: Text("Document Name"),
+                    ),
+                    controller: controller,
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  ElevatedButton(
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text(docimage != null
+                                    ? "Change Upload Document Image?"
+                                    : "Upload Upload Document Image"),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text("Cancel",
+                                          style: GoogleFonts.montserrat(
+                                              color: AERO))),
+                                  TextButton(
+                                      onPressed: () {
+                                        // upload from here
+                                        Navigator.pop(context);
+                                        pickFile();
+                                      },
+                                      child: Text(
+                                        "Upload Image from Device Storage",
+                                        style:
+                                            GoogleFonts.montserrat(color: AERO),
+                                      ))
+                                ],
+                              );
+                            });
+                      },
+                      child: Text(docimage != null
+                          ? "Change Upload Document Image?"
+                          : "Upload Document Image")),
+                  docimage != null
+                      ? Column(
+                          children: [
+                            kIsWeb
+                                ? Image.memory(docimage!.bytes!)
+                                : Image.file(File(docimage!.path!)),
+                            ElevatedButton(
+                                onPressed: () async {
+                                  if (key.currentState!.validate()) {
+                                    FirebaseFirestore.instance
+                                        .collection("Teams")
+                                        .doc(widget.teamCode)
+                                        .collection("Lab Specimen Requests")
+                                        .doc(widget.doc)
+                                        .collection("Specimens")
+                                        .add({
+                                      "time": DateTime.now(),
+                                      "name": controller.text,
+                                      "download_url": await uploadDocReq(
+                                          docimage!, teamCode)
+                                    }).then((value) {
+                                      ScaffoldMessenger.of(widget.scafcon)
+                                          .showSnackBar(SnackBar(
+                                              content: Text(
+                                                  "Document Added to Request Success")));
+                                      Navigator.pop(context);
+                                    });
+                                  }
+                                },
+                                child:
+                                    Text("Upload and Add Document to Request"))
+                          ],
+                        )
+                      : Container(),
+                  SizedBox(
+                    height: 20,
+                  ),
+                ],
+              )),
+        ),
+      ),
+      appBar: AppBar(
+        backgroundColor: EMERALD,
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Text("Add Document to Request"),
+      ),
+    );
+  }
+
+  pickFile() async {
+    final result = await FilePicker.platform.pickFiles();
+    if (result == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Failed to upload")));
+      return;
+    }
+    final file = result.files.first;
+
+    int sizeInBytes = file.size;
+    double sizeInMb = sizeInBytes / (1024 * 1024);
+    if (sizeInMb > 0.5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("File should be less than 500KB")));
+    } else {
+      setState(() {
+        docimage = file;
+      });
+    }
+  }
+
+  Future<String> uploadDocReq(PlatformFile imageFile, teamCode) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user logged in');
+    }
+
+    final fileName = '${imageFile.name}.${imageFile.extension}';
+    final reference = FirebaseStorage.instance
+        .ref()
+        .child('doc')
+        // .child('/$teamCode/document_requests/${widget.time}/${widget.name}/')
+        .child(fileName);
+
+    final bytes = await imageFile.bytes;
+    final uploadTask = reference.putData(bytes!);
+
+    final snapshot = await uploadTask.whenComplete(() => null);
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+
+    return downloadUrl;
   }
 }
