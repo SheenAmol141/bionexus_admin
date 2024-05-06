@@ -43,7 +43,7 @@ class _AdminContentState extends State<AdminContent> {
               UserAccountsDrawerHeader(
                 decoration: BoxDecoration(color: EMERALD),
                 accountName: Text(
-                  'Hello ${FirebaseAuth.instance.currentUser!.displayName ?? "unnamed"}!',
+                  'Admin Panel',
                   style: _text,
                 ),
                 accountEmail: Text(
