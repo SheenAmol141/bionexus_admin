@@ -3,6 +3,7 @@
 import 'package:bionexus_admin/db_helper.dart';
 import 'package:bionexus_admin/hex_color.dart';
 import 'package:bionexus_admin/subpages/admin_pages/licenses_page.dart';
+import 'package:bionexus_admin/subpages/admin_pages/sales_page.dart';
 import 'package:bionexus_admin/subpages/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -90,24 +91,6 @@ class _AdminContentState extends State<AdminContent> {
               ),
               Divider(),
               ListTile(
-                tileColor: currentPage == "Settings"
-                    ? Colors.grey.withOpacity(0.3)
-                    : null,
-                trailing: Icon(Icons.settings),
-                // iconColor: AERO,
-                title: Text(
-                  "Settings",
-                  style: _listText,
-                ),
-                onTap: (() {
-                  setState(() {
-                    currentPage = "Settings";
-                  });
-                  print(currentPage);
-                  Navigator.pop(context);
-                }),
-              ),
-              ListTile(
                 trailing: Icon(Icons.exit_to_app),
                 // iconColor: AERO,
                 title: Text(
@@ -127,13 +110,7 @@ class _AdminContentState extends State<AdminContent> {
             : currentPage == "Licenses"
                 ? LicensesPage()
                 : currentPage == "Sales"
-                    ? Center(
-                        child: Text("Sales"),
-                      )
-                    : currentPage == "Settings"
-                        ? Center(
-                            child: Text("Settings"),
-                          )
-                        : null);
+                    ? SalesPage()
+                    : null);
   }
 }

@@ -42,10 +42,10 @@ class _LicensesPageState extends State<LicensesPage> {
                     width: 10,
                   ),
                   Switch(
-                    value: descending,
+                    value: !descending,
                     onChanged: (value) {
                       setState(() {
-                        descending = value;
+                        descending = !value;
                       });
                     },
                   ),
@@ -298,7 +298,7 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
                                           content: const Padding(
                                             padding: EdgeInsets.all(20.0),
                                             child: Text(
-                                                "Do you wish to add 30 Days (1 Month) to the Subscription of this team?"),
+                                                "Do you wish to verify this team?"),
                                           ),
                                           actions: [
                                             TextButton(
@@ -312,7 +312,10 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
                                                       .collection("Teams")
                                                       .doc(widget.teamCode)
                                                       .update({
-                                                    "verified": true
+                                                    "verified": true,
+                                                    "subscription_deadline":
+                                                        DateTime.now().add(
+                                                            Duration(days: 14))
                                                   }).then((value) {
                                                     Navigator.of(context).pop();
                                                   }).then((value) {
@@ -445,6 +448,8 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
                                                     .toDate()
                                                     .add(Duration(days: 30))
                                               }).then((value) {
+                                                addSales(2999);
+                                              }).then((value) {
                                                 Navigator.of(context).pop();
                                               }).then((value) {
                                                 ScaffoldMessenger.of(
@@ -501,7 +506,9 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
                                                 "subscription_deadline": team[
                                                         "subscription_deadline"]
                                                     .toDate()
-                                                    .add(Duration(days: 30))
+                                                    .add(Duration(days: 90))
+                                              }).then((value) {
+                                                addSales(8550);
                                               }).then((value) {
                                                 Navigator.of(context).pop();
                                               }).then((value) {
@@ -561,6 +568,8 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
                                                     .toDate()
                                                     .add(Duration(days: 182))
                                               }).then((value) {
+                                                addSales(16200);
+                                              }).then((value) {
                                                 Navigator.of(context).pop();
                                               }).then((value) {
                                                 ScaffoldMessenger.of(
@@ -619,6 +628,8 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
                                                     .toDate()
                                                     .add(Duration(days: 365))
                                               }).then((value) {
+                                                addSales(30600);
+                                              }).then((value) {
                                                 Navigator.of(context).pop();
                                               }).then((value) {
                                                 ScaffoldMessenger.of(
@@ -655,5 +666,20 @@ class _ManageSubscriptionState extends State<ManageSubscription> {
         }
       },
     );
+  }
+
+  addSales(int price) async {
+    DateTime timenow = DateTime.now();
+    String date = DateFormat("MMMM yyyy").format(timenow);
+    CollectionReference ref = FirebaseFirestore.instance.collection("Sales");
+    final docRef = await ref.doc(date).get();
+    if (docRef.exists) {
+      ref.doc(date).get().then((value) {
+        ref.doc(date).update({"income": value["income"] + price});
+        print("added");
+      });
+    } else {
+      ref.doc(date).set({"income": price});
+    }
   }
 }
